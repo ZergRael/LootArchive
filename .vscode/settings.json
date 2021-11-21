@@ -1,0 +1,16 @@
+{
+  "Lua.diagnostics.globals": [
+    "LibStub",
+    "GetAddOnInfo",
+    "InterfaceOptionsFrame_OpenToCategory",
+    "UISpecialFrames",
+    "HybridScrollFrame_Update",
+    "GameFontHighlight",
+    "GameFontHighlightLarge",
+    "CreateFrame",
+    "HybridScrollFrame_CreateButtons",
+    "HybridScrollFrame_GetButtons",
+    "HybridScrollFrame_GetOffset"
+  ],
+  "Lua.runtime.version": "Lua 5.1"
+}

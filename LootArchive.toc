@@ -1,0 +1,15 @@
+## Interface: 20502
+## Title: LootArchive
+## Notes: Raid loot distribution history
+## Author: zergrael
+## Version: @project-version@
+## Revision: @project-abbreviated-hash@
+## SavedVariables: LootArchive
+
+embeds.xml
+locales.xml
+
+LootArchive.lua
+GUI.lua
+HybridScrollFrame.xml
+options.lua
