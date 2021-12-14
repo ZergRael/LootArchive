@@ -13,3 +13,4 @@ LootArchive.lua
 GUI.lua
 HybridScrollFrame.xml
 options.lua
+utils.lua
