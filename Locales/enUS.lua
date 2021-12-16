@@ -28,6 +28,9 @@ L["Add item"] = "Add item"
 L["Add item link or id to distribute"] = "Add item link or id to distribute"
 L["Give item"] = "Give item"
 L["Store item link or id as awarded to a player"] = "Store item link or id as awarded to a player"
+L["Cannot use give command without playername"] = "Cannot use give command without playername"
+L["No player found"] = "No player found"
+L["No currently tracked item"] = "No currently tracked item"
 L["Raid loot announce pattern"] = "Raid loot announce pattern"
 L["Raid loot distribution pattern"] = "Raid loot distribution pattern"
 
@@ -39,7 +42,14 @@ L["Purge database"] = "Purge database"
 L["Delete all collected data"] = "Delete all collected data"
 L["Database reset"] = "Database reset"
 
+-- GUI
+L["Item"] = "Item"
+L["Player"] = "Player"
+L["Date"] = "Date"
+L["Search for item or player"] = "Search for item or player"
+
 -- Time
 L["%is"] = "%is"
 L["%im %is"] = "%im %is"
 L["%ih %im"] = "%ih %im"
+L["%F %T"] = "%F %T"

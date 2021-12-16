@@ -11,59 +11,29 @@
                 </Texture>
             </Layer>
             <Layer level="ARTWORK">
-                <FontString parentKey="EndTime" inherits="GameFontHighlightSmall" justifyH="LEFT">
-                    <Size x="150"/>
+                <Texture parentKey="Icon" justifyH="LEFT">
+                    <Size x="20" y="20"/>
                     <Anchors>
                         <Anchor point="LEFT" x="4" y="0"/>
                     </Anchors>
-                </FontString>
-                <Texture parentKey="Icon">
-                    <Size x="20" y="20"/>
-					<Anchors>
-						<Anchor point="LEFT" relativePoint="RIGHT" relativeKey="$parent.EndTime"/>
-					</Anchors>
                 </Texture>
-                <FontString parentKey="MapName" inherits="GameFontHighlightSmall" justifyH="LEFT">
+                <FontString parentKey="Item" inherits="GameFontHighlightSmall" justifyH="LEFT">
                     <Size x="150"/>
-					<Anchors>
-						<Anchor point="LEFT" relativePoint="RIGHT" relativeKey="$parent.Icon" x="4"/>
-					</Anchors>
+                    <Anchors>
+                        <Anchor point="LEFT" relativePoint="RIGHT" relativeKey="$parent.Icon" x="4"/>
+                    </Anchors>
                 </FontString>
-                <FontString parentKey="RunTime" inherits="GameFontHighlightSmall" justifyH="LEFT">
-                    <Size x="104"/>
-					<Anchors>
-						<Anchor point="LEFT" relativePoint="RIGHT" relativeKey="$parent.MapName"/>
-					</Anchors>
+                <FontString parentKey="PlayerName" inherits="GameFontHighlightSmall" justifyH="LEFT">
+                    <Size x="150"/>
+                    <Anchors>
+                        <Anchor point="LEFT" relativePoint="RIGHT" relativeKey="$parent.Item" x="4"/>
+                    </Anchors>
                 </FontString>
-                <Texture parentKey="BattlefieldWinner">
-                    <Size x="20" y="20"/>
-					<Anchors>
-						<Anchor point="LEFT" relativePoint="RIGHT" relativeKey="$parent.RunTime"/>
-					</Anchors>
-                </Texture>
-                <FontString parentKey="KillingBlows" inherits="GameFontHighlightSmall" justifyH="RIGHT">
-                    <Size x="40"/>
-					<Anchors>
-						<Anchor point="LEFT" relativePoint="RIGHT" relativeKey="$parent.BattlefieldWinner" x="8"/>
-					</Anchors>
-                </FontString>
-                <FontString parentKey="HonorableKills" inherits="GameFontHighlightSmall" justifyH="RIGHT">
-                    <Size x="40"/>
-					<Anchors>
-						<Anchor point="LEFT" relativePoint="RIGHT" relativeKey="$parent.KillingBlows" x="4"/>
-					</Anchors>
-                </FontString>
-                <FontString parentKey="Deaths" inherits="GameFontHighlightSmall" justifyH="RIGHT">
-                    <Size x="40"/>
-					<Anchors>
-						<Anchor point="LEFT" relativePoint="RIGHT" relativeKey="$parent.HonorableKills" x="4"/>
-					</Anchors>
-                </FontString>
-                <FontString parentKey="HonorGained" inherits="GameFontHighlightSmall" justifyH="RIGHT">
-                    <Size x="44"/>
-					<Anchors>
-						<Anchor point="LEFT" relativePoint="RIGHT" relativeKey="$parent.Deaths" x="4"/>
-					</Anchors>
+                <FontString parentKey="Date" inherits="GameFontHighlightSmall" justifyH="LEFT">
+                    <Size x="150"/>
+                    <Anchors>
+                        <Anchor point="LEFT" relativePoint="RIGHT" relativeKey="$parent.PlayerName" x="4"/>
+                    </Anchors>
                 </FontString>
             </Layer>
             <Layer level="HIGHLIGHT">

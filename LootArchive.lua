@@ -27,6 +27,11 @@ function LA:OnInitialize()
     self.currentGuild = nil
     self.currentGuildRank = nil
     self.trackedItem = nil
+    self.gui = {
+        sortColumn = "date",
+        sortOrder = true,
+        filter = nil,
+    }
 
     -- This is not usable at this point, we need to wait for PLAYER_GUILD_UPDATE to fetch guild info
     -- self:FetchCurrentGuild()
@@ -78,14 +83,9 @@ function LA:GiveMasterLoot(slotId, candidateId, ...)
     local itemLink = tostring(GetLootSlotLink(slotId))
     self:Print("GiveMasterLoot", itemLink, candidate)
 
-    self:GetItemMixin(itemLink, function(item)
-        self:Award(item, candidate)
+    self:GetItemMixin(itemLink, function(itemMixin)
+        self:Award(itemMixin, candidate)
     end)
-end
-
-function LA:Award(itemMixin, playerName)
-    self:Announce(format(self.db.profile.awardStr, itemMixin:GetItemLink(), playerName))
-    self:StoreLootAwarded(itemMixin:GetItemID(), playerName)
 end
 
 -- Async function to retrieve itemMixin from item id or link
@@ -123,8 +123,8 @@ function LA:AddFromConsole(itemIdOrLink)
         return
     end
 
-    self:GetItemMixin(itemIdOrLink, function(item)
-        LA:TrackItem(item)
+    self:GetItemMixin(itemIdOrLink, function(itemMixin)
+        LA:TrackItem(itemMixin)
     end)
 end
 
@@ -138,7 +138,7 @@ function LA:TrackItem(itemMixin)
     self:Announce(format(self.db.profile.callLootStr, itemLink))
 
     -- Store id for manual distribution
-    self.trackedItem = itemLink
+    self.trackedItem = itemMixin
 end
 
 -- Award item to player, based on args and self.trackedItem
@@ -151,23 +151,78 @@ function LA:GiveFromConsole(itemIdOrLinkOrPlayerName)
         -- Make sure this is not a itemId
         local id = GetItemInfoInstant(itemIdOrLinkOrPlayerName)
         if id then
-            self:Print("Cannot use give without playername")
+            self:Print(L["Cannot use give command without playername"])
             return
         end
 
-        local playerName = self:GuessPlayerName(split[1])
-        if not playerName then
-            self:Print("No player found")
+        self:TryToAward(self.trackedItem, split[1])
+    else
+        self:Print("2+ args")
+        -- Various possibilities
+        -- itemId playerName
+        -- playerName itemId
+        -- itemLinkWithSpaces playerName
+        -- playername itemLinkWithSpaces
+        
+        local first = split[1]
+        local restWithoutFirst = strtrim(gsub(itemIdOrLinkOrPlayerName, first, "", 1))
+
+        local id = GetItemInfoInstant(first)
+        if id then
+            self:GetItemMixin(id, function(itemMixin)
+                self:TryToAward(itemMixin, restWithoutFirst)
+            end)
             return
         end
 
-        if not self.trackedItem then
-            self:Print("No currently tracked item")
+        id = GetItemInfoInstant(restWithoutFirst)
+        if id then
+            self:GetItemMixin(id, function(itemMixin)
+                self:TryToAward(itemMixin, first)
+            end)
+            return
+        end
+    
+        local last = split[#split]
+        local restWithoutLast = strtrim(strsub(itemIdOrLinkOrPlayerName, 1, #itemIdOrLinkOrPlayerName - #last))
+        id = GetItemInfoInstant(last)
+        if id then
+            self:GetItemMixin(id, function(itemMixin)
+                self:TryToAward(itemMixin, restWithoutLast)
+            end)
             return
         end
 
-        self:Award(self.trackedItem, playerName)
+        id = GetItemInfoInstant(restWithoutLast)
+        if id then
+            self:GetItemMixin(id, function(itemMixin)
+                self:TryToAward(itemMixin, last)
+            end)
+            return
+        end
     end
+end
+
+-- Try to award an itemMixin to a playerName
+function LA:TryToAward(itemMixin, probablePlayerName)
+    local playerName = self:GuessPlayerName(probablePlayerName)
+        if not playerName then
+        self:Print(L["No player found"])
+            return
+        end
+
+    if not itemMixin then
+        self:Print(L["No item to award"])
+            return
+        end
+
+    self:Award(itemMixin, playerName)
+    end
+
+-- Announce and store valid item distribution
+function LA:Award(itemMixin, playerName)
+    self:Announce(format(self.db.profile.awardStr, itemMixin:GetItemLink(), playerName))
+    self:StoreLootAwarded(itemMixin, playerName)
 end
 
 -- Guess proper playername from current raid roster based on slug
@@ -260,8 +315,8 @@ function LA:Announce(str)
 end
 
 -- Store item distribution in database
-function LA:StoreLootAwarded(itemId, playerName)
-    local loot = {id = itemId, name = playerName, t = time()}
+function LA:StoreLootAwarded(itemMixin, playerName)
+    local loot = {id = itemMixin:GetItemID(), item = itemMixin:GetItemName(), player = playerName, date = time()}
     tinsert(self.db.factionrealm.history[self.currentGuild], loot)
     self:LiveSync(loot)
 end
@@ -337,7 +392,25 @@ function LA:ToggleMinimapButton()
     end
 end
 
-function LA:GenerateRows(sortColumn)
+-- Set sort for next GUI redraw
+function LA:SetSort(sortColumn)
+    if sortColumn then
+        if self.gui.sortColumn == sortColumn then
+            self.gui.sortOrder = not self.gui.sortOrder
+        else
+            self.gui.sortColumn = sortColumn
+            self.gui.sortOrder = true
+        end
+    end
+end
+
+-- Set filter for next GUI redraw
+function LA:SetFilter(text)
+    self.gui.filter = text or nil
+end
+
+-- Generate filtered and sorted row for GUI
+function LA:GenerateRows(sortColumn, filter)
     -- self:Print("Rebuilding data table")
     local tbl = {}
 
@@ -346,33 +419,28 @@ function LA:GenerateRows(sortColumn)
     end
 
     for _, row in ipairs(self.db.factionrealm.history[self.currentGuild]) do
-        table.insert(tbl, {})
-    end
-
-    if sortColumn then
-        if self.sortColumn == sortColumn then
-            self.sortOrder = not self.sortOrder
-        else
-            self.sortColumn = sortColumn
-            self.sortOrder = true
+        if not self.gui.filter or strfind(row["item"], self.gui.filter) or strfind(row["player"], self.gui.filter) then
+            table.insert(tbl, row)
         end
     end
 
     table.sort(tbl, function(a, b)
-        if self.sortOrder then
-            return a[self.sortColumn] > b[self.sortColumn]
+        if self.gui.sortOrder then
+            return a[self.gui.sortColumn] > b[self.gui.sortColumn]
         else
-            return b[self.sortColumn] > a[self.sortColumn]
+            return b[self.gui.sortColumn] > a[self.gui.sortColumn]
         end
     end)
 
     return tbl
 end
 
+-- Various database optimizations
 function LA:OptimizeDatabase()
     self:CleanupDatabase()
 end
 
+-- Remove overflowing database records
 function LA:CleanupDatabase()
     if self.db.profile.maxHistory == 0 then
         return

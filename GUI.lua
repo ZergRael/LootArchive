@@ -10,13 +10,83 @@ function LA:CreateGUI()
     f:Hide()
     f:EnableResize(false)
 
-    -- f:SetCallback("OnClose", function(widget) AceGUI:Release(widget) end)
+    f:SetCallback("OnClose", function(widget)
+        -- AceGUI:Release(widget)
+        -- Cancel filter on close
+        self:SetFilter()
+        -- TODO: maybe also cancel sort ?
+    end)
     f:SetTitle(addonTitle)
     local frameName = addonName .."_MainFrame"
 	_G[frameName] = f
 	table.insert(UISpecialFrames, frameName) -- Allow ESC close
     f:SetStatusText("Status Bar")
     f:SetLayout("Flow")
+    
+    -- SEARCH HEADER
+    local searchHeader = AceGUI:Create("SimpleGroup")
+	searchHeader:SetFullWidth(true)
+	searchHeader:SetLayout("Flow")
+    f:AddChild(searchHeader)
+
+    local block = AceGUI:Create("SimpleGroup")
+    block:SetRelativeWidth(0.2)
+    searchHeader:AddChild(block)
+
+    local searchBox = AceGUI:Create("SimpleGroup")
+    searchBox:SetLabel(L["Search for item or player"])
+    searchBox:SetRelativeWidth(0.6)
+    searchBox:SetCallback("OnEnterPressed", function(widget, event, text)
+        LA:FilterRows(text)
+    end)
+    searchHeader:AddChild(searchBox)
+
+    block = AceGUI:Create("SimpleGroup")
+    block:SetRelativeWidth(0.2)
+    searchHeader:AddChild(block)
+
+    -- TABLE HEADER
+    local tableHeader = AceGUI:Create("SimpleGroup")
+    tableHeader:SetFullWidth(true)
+    tableHeader:SetLayout("Flow")
+    f:AddChild(tableHeader)
+
+    local margin = AceGUI:Create("Label")
+    margin:SetWidth(4)
+    tableHeader:AddChild(margin)
+
+    local btn
+    btn = AceGUI:Create("InteractiveLabel")
+    btn:SetWidth(145)
+    btn:SetText(string.format(" %s ", L["Item"]))
+    btn:SetJustifyH("LEFT")
+    btn.highlight:SetColorTexture(0.3, 0.3, 0.3, 0.5)
+    btn:SetCallback("OnClick", function() LA:SortRows("item") end)
+    tableHeader:AddChild(btn)
+
+    margin = AceGUI:Create("Label")
+    margin:SetWidth(4)
+    tableHeader:AddChild(margin)
+
+    btn = AceGUI:Create("InteractiveLabel")
+    btn:SetWidth(145)
+    btn:SetText(string.format(" %s ", L["Player"]))
+    btn:SetJustifyH("LEFT")
+    btn.highlight:SetColorTexture(0.3, 0.3, 0.3, 0.5)
+    btn:SetCallback("OnClick", function() LA:SortRows("player") end)
+    tableHeader:AddChild(btn)
+
+    margin = AceGUI:Create("Label")
+    margin:SetWidth(4)
+    tableHeader:AddChild(margin)
+
+    btn = AceGUI:Create("InteractiveLabel")
+    btn:SetWidth(94)
+    btn:SetText(string.format(" %s ", L["Date"]))
+    btn:SetJustifyH("LEFT")
+    btn.highlight:SetColorTexture(0.3, 0.3, 0.3, 0.5)
+    btn:SetCallback("OnClick", function() LA:SortRows("date") end)
+    tableHeader:AddChild(btn)
 
     -- TABLE
     local scrollContainer = AceGUI:Create("SimpleGroup")
@@ -35,6 +105,28 @@ function LA:RefreshLayout()
     local offset = HybridScrollFrame_GetOffset(scrollFrame)
 
     f:SetStatusText(string.format("Status text"))
+
+    for buttonIndex = 1, #buttons do
+		local button = buttons[buttonIndex]
+        local itemIndex = buttonIndex + offset
+        local row = rows[itemIndex]
+
+        if (itemIndex <= #rows) then
+            button:SetID(itemIndex)
+
+            self:GetItemMixin(row["id"], function(itemMixin)
+                button.Icon:SetTexture(itemMixin:GetItemIcon())
+                button.Item:SetText(itemMixin:GetItemLink())
+            end)
+            button.PlayerName:SetText(row["player"])
+            button.Date:SetText(date(L["%F %T"], row["date"]))
+
+            button:SetWidth(scrollFrame.scrollChild:GetWidth())
+			button:Show()
+		else
+			button:Hide()
+		end
+	end
 
 	local buttonHeight = scrollFrame.buttonHeight
 	local totalHeight = #rows * buttonHeight
@@ -70,9 +162,17 @@ function LA:ToggleGUI()
     end
 end
 
-function LA:Sort(column)
+function LA:SortRows(column)
     scrollFrame:SetVerticalScroll(0)
-    rows = LA:GenerateRows(column)
+    self:SetSort(column)
+    rows = self:GenerateRows()
+    self:RefreshLayout()
+end
+
+function LA:FilterRows(text)
+    scrollFrame:SetVerticalScroll(0)
+    self:SetFilter(text)
+    rows = self:GenerateRows()
     self:RefreshLayout()
 end
 
