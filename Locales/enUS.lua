@@ -32,6 +32,7 @@ L["Store item link or id as awarded to a player"] = "Store item link or id as aw
 L["Cannot use give command without playername"] = "Cannot use give command without playername"
 L["No player found"] = "No player found"
 L["No currently tracked item"] = "No currently tracked item"
+L["Not in group or raid, cannot match player name"] = "Not in group or raid, cannot match player name"
 L["Raid loot announce pattern"] = "Raid loot announce pattern"
 L["Raid loot distribution pattern"] = "Raid loot distribution pattern"
 

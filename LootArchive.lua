@@ -33,8 +33,10 @@ function LA:OnInitialize()
         filter = nil,
     }
 
-    -- This is not usable at this point, we need to wait for PLAYER_GUILD_UPDATE to fetch guild info
-    -- self:FetchCurrentGuild()
+    -- This is not usable at this point in login
+    -- we need to wait for PLAYER_GUILD_UPDATE to fetch guild info
+    -- this call is still useful in case of /reload
+    self:FetchCurrentGuild()
 
     -- Events register
     self:RegisterEvent("LOOT_OPENED")
@@ -97,18 +99,18 @@ function LA:GetItemMixin(itemIdOrLink, callbackFn)
     -- Get real ID
     local id = GetItemInfoInstant(itemIdOrLink)
     if not id then
-        self:Print("This does not seem to be a known valid item : ", itemIdOrLink)
+        -- self:Print("This does not seem to be a known valid item : ", itemIdOrLink)
         return
     end
 
-    if tostring(id) == itemIdOrLink then
-        self:Print("This seems to be an item id : ", itemIdOrLink)
+    if tostring(id) == tostring(itemIdOrLink) then
+        -- self:Print("This seems to be an item id : ", itemIdOrLink)
         local itemMixin = Item:CreateFromItemID(itemIdOrLink)
         itemMixin:ContinueOnItemLoad(function()
             callbackFn(itemMixin)
         end)
     else
-        self:Print("This seems to be an item link : ", itemIdOrLink)
+        -- self:Print("This seems to be an item link : ", itemIdOrLink)
         local itemMixin = Item:CreateFromItemLink(itemIdOrLink)
         itemMixin:ContinueOnItemLoad(function()
             callbackFn(itemMixin)
@@ -142,7 +144,7 @@ function LA:TrackItem(itemMixin)
 end
 
 -- Award item to player, based on args and self.trackedItem
-function LA:GiveFromConsole(itemIdOrLinkOrPlayerName)
+function LA:GiveFromConsole(itemIdOrLinkOrPlayerName, exact)
     self:Print("GiveFromConsole", itemIdOrLinkOrPlayerName)
 
     local itemIdOrLink, playerName, reason
@@ -186,7 +188,12 @@ function LA:GiveFromConsole(itemIdOrLinkOrPlayerName)
 
     itemIdOrLinkOrPlayerName = self:StrRemove(itemIdOrLinkOrPlayerName, name)
 
+    if exact then
+        playerName = name
+    else
     playerName = self:GuessPlayerName(name)
+    end
+
         if not playerName then
         self:Print(L["No player found"])
             return
@@ -194,8 +201,8 @@ function LA:GiveFromConsole(itemIdOrLinkOrPlayerName)
 
     reason = itemIdOrLinkOrPlayerName
 
+    -- self:Print(itemIdOrLink, playerName, reason)
     self:GetItemMixin(itemIdOrLink, function(itemMixin)
-        self:Print(itemIdOrLink, playerName, reason)
         self:Award(itemMixin, playerName, reason)
     end)
     end
@@ -203,8 +210,9 @@ function LA:GiveFromConsole(itemIdOrLinkOrPlayerName)
 -- Announce and store valid item distribution
 function LA:Award(itemMixin, playerName, reason)
     -- TODO : Should we also announce reason ?
+    if self:StoreLootAwarded(itemMixin, playerName, reason) then
     self:Announce(format(self.db.profile.awardStr, itemMixin:GetItemLink(), playerName))
-    self:StoreLootAwarded(itemMixin, playerName, reason)
+    end
 end
 
 -- Guess proper playername from current raid roster based on slug
@@ -233,8 +241,8 @@ function LA:GuessPlayerName(playerName)
             end
         end
     else
-        self:Print("Not in group or raid")
-        -- return
+        self:Print(L["Not in group or raid, cannot match player name"])
+        return
     end
 
     -- self:PrintTable(roster)
@@ -299,8 +307,13 @@ end
 -- Store item distribution in database
 function LA:StoreLootAwarded(itemMixin, playerName, reason)
     local loot = {id = itemMixin:GetItemID(), item = itemMixin:GetItemName(), player = playerName, reason = reason, date = time()}
+    if not self.db.factionrealm.history[self.currentGuild] then
+        self.db.factionrealm.history[self.currentGuild] = {}
+    end
     tinsert(self.db.factionrealm.history[self.currentGuild], loot)
     self:LiveSync(loot)
+
+    return true
 end
 
 -- Store current guild name & player rank
@@ -432,4 +445,8 @@ function LA:CleanupDatabase()
     if count > self.db.profile.maxHistory then
         removemulti(self.db.factionrealm.history[self.currentGuild], self.db.profile.maxHistory, self.db.factionrealm.history[self.currentGuild] - self.db.profile.maxHistory)
     end
+end
+
+function LA:StrRemove(s, el)
+    return strtrim(strtrim(gsub(s, gsub(gsub(el, "%[", "%%[", 1), "%]", "%%]", 1), "", 1)))
 end

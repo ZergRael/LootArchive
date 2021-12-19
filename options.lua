@@ -39,8 +39,18 @@ function LA:RegisterOptionsTable()
                     self:GiveFromConsole(itemIdOrLinkOrPlayerName)
                 end
             },
+            GiveExact = {
+                order = 3,
+                type = "execute",
+                name = L["Give item"],
+                desc = L["Store item link or id as awarded to a player"],
+                func = function(f)
+                    local itemIdOrLinkOrPlayerName = strtrim(select(2, strsplit(" ", f["input"], 2)))
+                    self:GiveFromConsole(itemIdOrLinkOrPlayerName, true)
+                end
+            },
             Guess = {
-                order = 4,
+                order = 9,
                 type = "execute",
                 name = "DEBUG: Guess name",
                 func = function(f)
