@@ -39,7 +39,8 @@
     "GetAddOnMetadata",
     "Item",
     "strtrim",
-    "date"
+    "date",
+    "strjoin"
   ],
   "Lua.runtime.version": "Lua 5.1"
 }

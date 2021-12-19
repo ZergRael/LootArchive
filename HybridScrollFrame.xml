@@ -29,10 +29,16 @@
                         <Anchor point="LEFT" relativePoint="RIGHT" relativeKey="$parent.Item" x="4"/>
                     </Anchors>
                 </FontString>
-                <FontString parentKey="Date" inherits="GameFontHighlightSmall" justifyH="LEFT">
+                <FontString parentKey="Reason" inherits="GameFontHighlightSmall" justifyH="LEFT">
                     <Size x="150"/>
                     <Anchors>
                         <Anchor point="LEFT" relativePoint="RIGHT" relativeKey="$parent.PlayerName" x="4"/>
+                    </Anchors>
+                </FontString>
+                <FontString parentKey="Date" inherits="GameFontHighlightSmall" justifyH="LEFT">
+                    <Size x="150"/>
+                    <Anchors>
+                        <Anchor point="LEFT" relativePoint="RIGHT" relativeKey="$parent.Reason" x="4"/>
                     </Anchors>
                 </FontString>
             </Layer>

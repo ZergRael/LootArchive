@@ -145,84 +145,66 @@ end
 function LA:GiveFromConsole(itemIdOrLinkOrPlayerName)
     self:Print("GiveFromConsole", itemIdOrLinkOrPlayerName)
 
-    local split = strsplit(" ", itemIdOrLinkOrPlayerName)
-    if #split == 1 then
-        self:Print("1 arg")
-        -- Make sure this is not a itemId
-        local id = GetItemInfoInstant(itemIdOrLinkOrPlayerName)
+    local itemIdOrLink, playerName, reason
+    -- Match first item
+    local link = strmatch(itemIdOrLinkOrPlayerName, "(|c[^|]+|H[^|]+|h[^|]+|h|r)")
+    if link then
+        local id = GetItemInfoInstant(link)
         if id then
-            self:Print(L["Cannot use give command without playername"])
-            return
+            itemIdOrLink = id
+            itemIdOrLinkOrPlayerName = self:StrRemove(itemIdOrLinkOrPlayerName, link)
         end
-
-        self:TryToAward(self.trackedItem, split[1])
-    else
-        self:Print("2+ args")
-        -- Various possibilities
-        -- itemId playerName
-        -- playerName itemId
-        -- itemLinkWithSpaces playerName
-        -- playername itemLinkWithSpaces
-        
-        local first = split[1]
-        local restWithoutFirst = strtrim(gsub(itemIdOrLinkOrPlayerName, first, "", 1))
-
-        local id = GetItemInfoInstant(first)
-        if id then
-            self:GetItemMixin(id, function(itemMixin)
-                self:TryToAward(itemMixin, restWithoutFirst)
-            end)
-            return
         end
-
-        id = GetItemInfoInstant(restWithoutFirst)
+    -- if there's no item link, there may be an itemID
+    -- but we need to make sure it's a just an integer
+    if not itemIdOrLink then
+        local mid = strmatch(itemIdOrLinkOrPlayerName, "^(%d+) ") or strmatch(itemIdOrLinkOrPlayerName, " (%d+)$") or strmatch(itemIdOrLinkOrPlayerName, " (%d+) ")
+        if mid then
+            local id = GetItemInfoInstant(mid)
         if id then
-            self:GetItemMixin(id, function(itemMixin)
-                self:TryToAward(itemMixin, first)
-            end)
-            return
+                itemIdOrLink = id
+                itemIdOrLinkOrPlayerName = self:StrRemove(itemIdOrLinkOrPlayerName, id)
+            end
+        end
         end
     
-        local last = split[#split]
-        local restWithoutLast = strtrim(strsub(itemIdOrLinkOrPlayerName, 1, #itemIdOrLinkOrPlayerName - #last))
-        id = GetItemInfoInstant(last)
-        if id then
-            self:GetItemMixin(id, function(itemMixin)
-                self:TryToAward(itemMixin, restWithoutLast)
-            end)
-            return
-        end
-
-        id = GetItemInfoInstant(restWithoutLast)
-        if id then
-            self:GetItemMixin(id, function(itemMixin)
-                self:TryToAward(itemMixin, last)
-            end)
+    if not itemIdOrLink then
+        if self.trackedItem then
+            itemIdOrLink = self.trackedItem:GetItemID()
+        else
+            self:Print(L["No currently tracked item"])
             return
         end
     end
-end
 
--- Try to award an itemMixin to a playerName
-function LA:TryToAward(itemMixin, probablePlayerName)
-    local playerName = self:GuessPlayerName(probablePlayerName)
+    -- At this point we're sure the next arg must be playerName
+    local name = strmatch(itemIdOrLinkOrPlayerName, "^(%a+)")
+    if not name then
+        self:Print(L["No player found"])
+            return
+        end
+
+    itemIdOrLinkOrPlayerName = self:StrRemove(itemIdOrLinkOrPlayerName, name)
+
+    playerName = self:GuessPlayerName(name)
         if not playerName then
         self:Print(L["No player found"])
             return
         end
 
-    if not itemMixin then
-        self:Print(L["No item to award"])
-            return
-        end
+    reason = itemIdOrLinkOrPlayerName
 
-    self:Award(itemMixin, playerName)
+    self:GetItemMixin(itemIdOrLink, function(itemMixin)
+        self:Print(itemIdOrLink, playerName, reason)
+        self:Award(itemMixin, playerName, reason)
+    end)
     end
 
 -- Announce and store valid item distribution
-function LA:Award(itemMixin, playerName)
+function LA:Award(itemMixin, playerName, reason)
+    -- TODO : Should we also announce reason ?
     self:Announce(format(self.db.profile.awardStr, itemMixin:GetItemLink(), playerName))
-    self:StoreLootAwarded(itemMixin, playerName)
+    self:StoreLootAwarded(itemMixin, playerName, reason)
 end
 
 -- Guess proper playername from current raid roster based on slug
@@ -287,27 +269,27 @@ end
 
 -- Send to raid/group
 function LA:Announce(str)
+    if self.db.profile.announceTo then
+        self:Print(str)
+        return
+    end
+
     if IsInRaid() then
         if self.db.profile.announceTo == "RAID_WARNING" then
             if (UnitIsGroupLeader("player") or UnitIsGroupAssistant("player")) then
-                -- SendChatMessage(str, self.db.profile.announceTo)
-                self:Print("Send to", self.db.profile.announceTo, str)
+                SendChatMessage(str, self.db.profile.announceTo)
             else
-                self:Print("Using raid channel as you are not raid leader / assistant")
-                -- SendChatMessage(str, "RAID")
-                self:Print("Send to", "RAID", str)
+                -- self:Print("Using raid channel as you are not raid leader / assistant")
+                SendChatMessage(str, "RAID")
             end
         elseif self.db.profile.announceTo == "RAID" then
-            -- SendChatMessage(str, self.db.profile.announceTo)
-            self:Print("Send to", self.db.profile.announceTo, str)
+            SendChatMessage(str, self.db.profile.announceTo)
         end
     elseif IsInGroup() then
         if self.db.profile.announceTo == "RAID_WARNING" then
-            -- SendChatMessage(str, self.db.profile.announceTo)
-            self:Print("Send to", self.db.profile.announceTo, str)
+            SendChatMessage(str, self.db.profile.announceTo)
         elseif self.db.profile.announceTo == "RAID" then
-            -- SendChatMessage(str, "PARTY")
-            self:Print("Send to", "PARTY", str)
+            SendChatMessage(str, "PARTY")
         end
     else
         self:Print("Not in raid/group, cannot announce", str)
@@ -315,8 +297,8 @@ function LA:Announce(str)
 end
 
 -- Store item distribution in database
-function LA:StoreLootAwarded(itemMixin, playerName)
-    local loot = {id = itemMixin:GetItemID(), item = itemMixin:GetItemName(), player = playerName, date = time()}
+function LA:StoreLootAwarded(itemMixin, playerName, reason)
+    local loot = {id = itemMixin:GetItemID(), item = itemMixin:GetItemName(), player = playerName, reason = reason, date = time()}
     tinsert(self.db.factionrealm.history[self.currentGuild], loot)
     self:LiveSync(loot)
 end

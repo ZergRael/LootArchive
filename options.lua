@@ -69,7 +69,7 @@ function LA:RegisterOptionsTable()
                                 type = "select",
                                 name = L["Announce to"],
                                 desc = L["Channel used to send distribution announces"],
-                                values = {RAID_WARNING = L["Raid warning"], RAID = L["Raid"]},
+                                values = {RAID_WARNING = L["Raid warning"], RAID = L["Raid"], SELF = L["Self"]},
                                 get = function() return self.db.profile.announceTo end,
                                 set = function(_, val) self.db.profile.announceTo = val end,
                             },

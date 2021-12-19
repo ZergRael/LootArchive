@@ -11,6 +11,7 @@ L["Roll for %s"] = "Roll for %s"
 L["%s awarded to %s"] = "%s awarded to %s"
 L["Raid warning"] = "Raid warning"
 L["Raid"] = "Raid"
+L["Self"] = "Self"
 
 -- Minimap button
 L["Left Click"] = "Left Click"
@@ -45,6 +46,7 @@ L["Database reset"] = "Database reset"
 -- GUI
 L["Item"] = "Item"
 L["Player"] = "Player"
+L["Reason"] = "Reason"
 L["Date"] = "Date"
 L["Search for item or player"] = "Search for item or player"
 
