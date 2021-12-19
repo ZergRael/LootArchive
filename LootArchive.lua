@@ -1,9 +1,11 @@
 local addonName = "LootArchive"
 local addonTitle = select(2, GetAddOnInfo(addonName))
 local addonVersion = GetAddOnMetadata(addonName, "Version")
-local LA = LibStub("AceAddon-3.0"):NewAddon(addonName, "AceConsole-3.0", "AceEvent-3.0", "AceHook-3.0", "AceComm-3.0", "AceSerializer-3.0")
+local LA = LibStub("AceAddon-3.0"):NewAddon(addonName, "AceConsole-3.0", "AceEvent-3.0", "AceHook-3.0", "AceComm-3.0", "AceSerializer-3.0", "AceTimer-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale(addonName, true)
 local libDBIcon = LibStub("LibDBIcon-1.0")
+
+local syncThresholdSeconds = 100
 
 -- Addon init
 function LA:OnInitialize()
@@ -20,6 +22,7 @@ function LA:OnInitialize()
         },
         factionrealm = {
             history = {},
+            timestamp = {},
         },
     })
 
@@ -32,6 +35,8 @@ function LA:OnInitialize()
         sortOrder = true,
         filter = nil,
     }
+    self.requestSyncBucket = {}
+    self.requestSyncTimer = nil
 
     -- This is not usable at this point in login
     -- we need to wait for PLAYER_GUILD_UPDATE to fetch guild info
@@ -47,7 +52,10 @@ function LA:OnInitialize()
     -- Hooks
     self:Hook("GiveMasterLoot", true)
 
-    self:RegisterComm(addonName, "ReceiveSyncDB")
+    -- Comms
+    self:RegisterComm(addonName.."_REQ", "ReceiveRequestSyncDB")
+    self:RegisterComm(addonName.."_BULK", "ReceiveSyncDB")
+    self:RegisterComm(addonName.."_LIVE", "ReceiveLiveSync")
 
     -- GUI and options init
 	self:DrawMinimapIcon()
@@ -156,20 +164,20 @@ function LA:GiveFromConsole(itemIdOrLinkOrPlayerName, exact)
             itemIdOrLink = id
             itemIdOrLinkOrPlayerName = self:StrRemove(itemIdOrLinkOrPlayerName, link)
         end
-        end
+    end
     -- if there's no item link, there may be an itemID
     -- but we need to make sure it's a just an integer
     if not itemIdOrLink then
         local mid = strmatch(itemIdOrLinkOrPlayerName, "^(%d+) ") or strmatch(itemIdOrLinkOrPlayerName, " (%d+)$") or strmatch(itemIdOrLinkOrPlayerName, " (%d+) ")
         if mid then
             local id = GetItemInfoInstant(mid)
-        if id then
+            if id then
                 itemIdOrLink = id
                 itemIdOrLinkOrPlayerName = self:StrRemove(itemIdOrLinkOrPlayerName, id)
             end
         end
-        end
-    
+    end
+
     if not itemIdOrLink then
         if self.trackedItem then
             itemIdOrLink = self.trackedItem:GetItemID()
@@ -183,36 +191,43 @@ function LA:GiveFromConsole(itemIdOrLinkOrPlayerName, exact)
     local name = strmatch(itemIdOrLinkOrPlayerName, "^(%a+)")
     if not name then
         self:Print(L["No player found"])
-            return
-        end
+        return
+    end
 
     itemIdOrLinkOrPlayerName = self:StrRemove(itemIdOrLinkOrPlayerName, name)
 
     if exact then
         playerName = name
     else
-    playerName = self:GuessPlayerName(name)
+        playerName = self:GuessPlayerName(name)
     end
 
-        if not playerName then
+    if not playerName then
         self:Print(L["No player found"])
-            return
-        end
+        return
+    end
 
     reason = itemIdOrLinkOrPlayerName
 
     -- self:Print(itemIdOrLink, playerName, reason)
     self:GetItemMixin(itemIdOrLink, function(itemMixin)
-        self:Award(itemMixin, playerName, reason)
+        if self:Award(itemMixin, playerName, reason) then
+            if not itemIdOrLink then
+                self.trackedItem = nil
+            end
+        end
     end)
-    end
+end
 
 -- Announce and store valid item distribution
 function LA:Award(itemMixin, playerName, reason)
     -- TODO : Should we also announce reason ?
     if self:StoreLootAwarded(itemMixin, playerName, reason) then
-    self:Announce(format(self.db.profile.awardStr, itemMixin:GetItemLink(), playerName))
+        self:Announce(format(self.db.profile.awardStr, itemMixin:GetItemLink(), playerName))
+        return true
     end
+
+    return false
 end
 
 -- Guess proper playername from current raid roster based on slug
@@ -308,9 +323,11 @@ end
 function LA:StoreLootAwarded(itemMixin, playerName, reason)
     local loot = {id = itemMixin:GetItemID(), item = itemMixin:GetItemName(), player = playerName, reason = reason, date = time()}
     if not self.db.factionrealm.history[self.currentGuild] then
-        self.db.factionrealm.history[self.currentGuild] = {}
+        self.db.factionrealm.history[self.currentGuild].loots = {}
+        self.db.factionrealm.history[self.currentGuild].timestamp = nil
     end
-    tinsert(self.db.factionrealm.history[self.currentGuild], loot)
+    tinsert(self.db.factionrealm.history[self.currentGuild].loots, loot)
+    self.db.factionrealm.history[self.currentGuild].timestamp = time()
     self:LiveSync(loot)
 
     return true
@@ -329,6 +346,93 @@ function LA:FetchCurrentGuild()
 
     self.currentGuild = guildName
     self.currentGuildRank = guildRankName
+
+    self:RequestDBSync()
+end
+
+-- Send guild broadcast database sync request
+function LA:RequestDBSync()
+    if not IsInGuild() then
+        return
+    end
+
+    local timestamp = 0
+    if self.db.factionrealm.history[self.currentGuild] then
+        timestamp = self.db.factionrealm.history[self.currentGuild].timestamp
+    end
+    local msg = {state = "REQUEST", timestamp = timestamp}
+    self:SendCommMessage(addonName.."_REQ", self:Serialize(msg), "GUILD")
+end
+
+-- Receive database sync request
+function LA:ReceiveRequestSyncDB(prefix, msg, channel, sender)
+    if channel == "GUILD" then
+        -- This is a post-login _REQ, just answer with our own timestamp
+        if self.db.factionrealm.history[self.currentGuild] then
+            self:SendCommMessage(addonName.."_REQ", self:Serialise({state = "OFFER", timestamp = self.db.factionrealm.history[self.currentGuild].timestamp}), "WHISPER", sender)
+        end
+
+        return
+    end
+
+    local success, data = self:Deserialize(msg)
+    if not success then
+        -- Ignore garbled data
+        return
+    end
+
+    if data["state"] == "OFFER" then
+
+        tinsert(self.requestSyncBucket, { sender = sender, timestamp = data["timestamp"] })
+
+        -- Wait for a few seconds and process offers
+        if not self.requestSyncTimer then
+            self.requestSyncTimer = self:ScheduleTimer("ProcessSyncDBOffers", 10)
+        end
+    elseif data["state"] == "ACCEPT" then
+        self:SyncDB(sender)
+    end
+end
+
+-- Process bucketed sync database offers
+function LA:ProcessSyncDBOffers()
+    self.requestSyncTimer = nil
+
+    local sender, mostRecentTimestamp = nil, 0
+    for i,v in ipairs(self.requestSyncTimer) do
+        if v["timestamp"] > mostRecentTimestamp then
+            sender = v["sender"]
+            mostRecentTimestamp = v["timestamp"]
+        end
+    end
+
+    if sender then
+        -- Only send data if our timestamp is too old
+        if self.db.factionrealm.history[self.currentGuild] then
+            local diff = abs(self.db.factionrealm.history[self.currentGuild].timestamp - mostRecentTimestamp)
+            if diff < syncThresholdSeconds then
+                return
+            end
+        end
+
+        self:SendCommMessage(addonName.."_REQ", self:Serialise({state = "ACCEPT"}), "WHISPER", sender)
+    end
+end
+
+-- Trigger database sync with other guild members
+function LA:SyncDB(playerName)
+    self:SendCommMessage(addonName.."_BULK", self:Serialize(self.db.factionrealm.history[self.currentGuild]), "WHISPER", playerName, "BULK")
+end
+
+-- Receive DB contents
+function LA:ReceiveSyncDB(prefix, msg, channel, sender)
+    local success, data = self:Deserialize(msg)
+    if not success then
+        self:Print("Failed to deserialize bulk data")
+        return
+    end
+
+    self.db.factionrealm.history[self.currentGuild] = data
 end
 
 -- Send live distribution addition / removal
@@ -336,16 +440,8 @@ function LA:LiveSync(loot)
     -- Dedup
 end
 
--- Trigger database sync with other guild members
-function LA:SyncDB()
-end
-
--- Receive DB contents
-function LA:ReceiveSyncDB(str)
-end
-
 -- Receive live distribution addition / removal
-function LA:ReceiveLiveSync(str)
+function LA:ReceiveLiveSync(prefix, msg, channel, sender)
 end
 
 -- Reset entire database
@@ -413,7 +509,7 @@ function LA:GenerateRows(sortColumn, filter)
         return tbl
     end
 
-    for _, row in ipairs(self.db.factionrealm.history[self.currentGuild]) do
+    for _, row in ipairs(self.db.factionrealm.history[self.currentGuild].loots) do
         if not self.gui.filter or strfind(row["item"], self.gui.filter) or strfind(row["player"], self.gui.filter) then
             table.insert(tbl, row)
         end
@@ -441,9 +537,9 @@ function LA:CleanupDatabase()
         return
     end
 
-    local count = #self.db.factionrealm.history[self.currentGuild]
+    local count = #self.db.factionrealm.history[self.currentGuild].loots
     if count > self.db.profile.maxHistory then
-        removemulti(self.db.factionrealm.history[self.currentGuild], self.db.profile.maxHistory, self.db.factionrealm.history[self.currentGuild] - self.db.profile.maxHistory)
+        removemulti(self.db.factionrealm.history[self.currentGuild].loots, self.db.profile.maxHistory, count - self.db.profile.maxHistory)
     end
 end
 

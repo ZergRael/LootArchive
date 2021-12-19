@@ -40,7 +40,8 @@
     "Item",
     "strtrim",
     "date",
-    "strjoin"
+    "strjoin",
+    "abs"
   ],
   "Lua.runtime.version": "Lua 5.1"
 }
