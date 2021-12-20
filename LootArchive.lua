@@ -94,7 +94,9 @@ function LA:GiveMasterLoot(slotId, candidateId, ...)
     self:Print("DEBUG:GiveMasterLoot", itemLink, candidate)
 
     self:GetItemMixin(itemLink, function(itemMixin)
-        self:Award(itemMixin, candidate)
+        if not self:Award(itemMixin, candidate) then
+            self:Print(L["Cannot store award in database right now, please reload and try again"])
+        end
     end)
 end
 
@@ -215,6 +217,8 @@ function LA:GiveFromConsole(itemIdOrLinkOrPlayerName, exact)
             if self.trackedItem and self.trackedItem:GetItemID() == itemMixin:GetItemID() then
                 self.trackedItem = nil
             end
+        else
+            self:Print(L["Cannot store award in database right now, please reload and try again"])
         end
     end)
 end
@@ -321,15 +325,22 @@ end
 
 -- Store item distribution in database
 function LA:StoreLootAwarded(itemMixin, playerName, reason)
-    local loot = {id = itemMixin:GetItemID(), item = strlower(itemMixin:GetItemName()), player = playerName, reason = reason, date = time()}
-    if not self.db.factionrealm.history[self.currentGuild] then
-        self.db.factionrealm.history[self.currentGuild] = {}
-        self.db.factionrealm.history[self.currentGuild].loots = {}
-        self.db.factionrealm.history[self.currentGuild].timestamp = nil
+    local now = time()
+    local loot = {
+        id = itemMixin:GetItemID(),
+        item = strlower(itemMixin:GetItemName()), -- TODO: Don't store this
+        player = playerName,
+        reason = reason,
+        date = now
+    }
+
+    if not self:CreateDatabaseIfNecessary() then
+        return false
     end
+
     tinsert(self.db.factionrealm.history[self.currentGuild].loots, loot)
-    self.db.factionrealm.history[self.currentGuild].timestamp = time()
-    self:LiveSync(loot)
+    self.db.factionrealm.history[self.currentGuild].timestamp = now
+    self:LiveSync(loot, "ADD")
 
     if self:IsGUIVisible() then
         self:UpdateRows()
@@ -374,6 +385,9 @@ end
 -- Receive database sync request
 function LA:ReceiveRequestSyncDB(prefix, msg, channel, sender)
     self:Print("DEBUG:ReceiveRequestSyncDB", prefix, msg, channel, sender)
+
+    -- TODO: Ignore our own messages
+
     if channel == "GUILD" then
         -- This is a post-login _REQ, just answer with our own timestamp
         if self.db.factionrealm.history[self.currentGuild] then
@@ -390,7 +404,6 @@ function LA:ReceiveRequestSyncDB(prefix, msg, channel, sender)
     end
 
     if data["state"] == "OFFER" then
-
         tinsert(self.requestSyncBucket, { sender = sender, timestamp = data["timestamp"] })
 
         -- Wait for a few seconds and process offers
@@ -437,6 +450,8 @@ end
 
 -- Receive DB contents
 function LA:ReceiveSyncDB(prefix, msg, channel, sender)
+    self:Print("DEBUG:ReceiveSyncDB", prefix, msg, channel, sender)
+
     local success, data = self:Deserialize(msg)
     if not success then
         self:Print("DEBUG:Failed to deserialize bulk data")
@@ -447,12 +462,53 @@ function LA:ReceiveSyncDB(prefix, msg, channel, sender)
 end
 
 -- Send live distribution addition / removal
-function LA:LiveSync(loot)
-    -- Dedup
+function LA:LiveSync(loot, state)
+    self:Print("DEBUG:LiveSync", loot, state)
+
+    loot["state"] = state
+    self:SendCommMessage(addonName.."_LIVE", self:Serialize(loot), "GUILD")
 end
 
 -- Receive live distribution addition / removal
 function LA:ReceiveLiveSync(prefix, msg, channel, sender)
+    self:Print("DEBUG:ReceiveLiveSync", prefix, msg, channel, sender)
+
+    -- TODO: Ignore our own messages
+
+    local success, loot = self:Deserialize(msg)
+    if not success then
+        self:Print("DEBUG:Failed to deserialize bulk data")
+        return
+    end
+
+    local state = loot["state"]
+    loot["state"] = nil
+    
+    if not self:CreateDatabaseIfNecessary() then
+        self:Print(L["Cannot live sync database now, please try a manual sync later"])
+        return
+    end
+
+    if state == "ADD" then
+        tinsert(self.db.factionrealm.history[self.currentGuild].loots, loot)
+        -- We can assume this loot timestamp is the most recent, keep it as is
+        self.db.factionrealm.history[self.currentGuild].timestamp = loot["date"]
+    end
+end
+
+-- Create empty database if necessary before add/remove operations
+function LA:CreateDatabaseIfNecessary()
+    if not self.currentGuild then
+        return false
+    end
+
+    if not self.db.factionrealm.history[self.currentGuild] then
+        self.db.factionrealm.history[self.currentGuild] = {}
+        self.db.factionrealm.history[self.currentGuild].loots = {}
+        self.db.factionrealm.history[self.currentGuild].timestamp = nil
+    end
+
+    return true
 end
 
 -- Reset entire database

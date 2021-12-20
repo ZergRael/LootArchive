@@ -35,6 +35,8 @@ L["No currently tracked item"] = "No currently tracked item"
 L["Not in group or raid, cannot match player name"] = "Not in group or raid, cannot match player name"
 L["Raid loot announce pattern"] = "Raid loot announce pattern"
 L["Raid loot distribution pattern"] = "Raid loot distribution pattern"
+L["Cannot live sync database now, please try a manual sync later"] = "Cannot live sync database now, please try a manual sync later"
+L["Cannot store award in database right now, please reload and try again"] = "Cannot store award in database right now, please reload and try again"
 
 -- Database
 L["Maximum records in history"] = "Maximum records in history"
@@ -43,6 +45,8 @@ L["Database Settings"] = "Database Settings"
 L["Purge database"] = "Purge database"
 L["Delete all collected data"] = "Delete all collected data"
 L["Database reset"] = "Database reset"
+L["Manual sync"] = "Manual sync"
+L["Ask guild members for manual database sync"] = "Ask guild members for manual database sync"
 
 -- GUI
 L["Item"] = "Item"

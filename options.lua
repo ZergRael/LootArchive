@@ -132,6 +132,14 @@ function LA:RegisterOptionsTable()
                                 get = function() return self.db.profile.maxHistory end,
                                 set = function(_, val) self.db.profile.maxHistory = val end,
                             },
+                            manualSync = {
+                                order = 12,
+                                type = "execute",
+                                name = L["Manual sync"],
+                                desc = L["Ask guild members for manual database sync"],
+                                confirm = true,
+                                func = function() self:RequestDBSync() end
+                            },
                             purge = {
                                 order = 19,
                                 type = "execute",
