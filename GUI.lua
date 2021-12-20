@@ -57,7 +57,7 @@ function LA:CreateGUI()
 
     local btn
     btn = AceGUI:Create("InteractiveLabel")
-    btn:SetWidth(145)
+    btn:SetWidth(165)
     btn:SetText(string.format(" %s ", L["Item"]))
     btn:SetJustifyH("LEFT")
     btn.highlight:SetColorTexture(0.3, 0.3, 0.3, 0.5)
@@ -69,7 +69,7 @@ function LA:CreateGUI()
     tableHeader:AddChild(margin)
 
     btn = AceGUI:Create("InteractiveLabel")
-    btn:SetWidth(145)
+    btn:SetWidth(150)
     btn:SetText(string.format(" %s ", L["Player"]))
     btn:SetJustifyH("LEFT")
     btn.highlight:SetColorTexture(0.3, 0.3, 0.3, 0.5)
@@ -81,7 +81,7 @@ function LA:CreateGUI()
     tableHeader:AddChild(margin)
 
     btn = AceGUI:Create("InteractiveLabel")
-    btn:SetWidth(145)
+    btn:SetWidth(150)
     btn:SetText(string.format(" %s ", L["Reason"]))
     btn:SetJustifyH("LEFT")
     btn.highlight:SetColorTexture(0.3, 0.3, 0.3, 0.5)
@@ -93,7 +93,7 @@ function LA:CreateGUI()
     tableHeader:AddChild(margin)
 
     btn = AceGUI:Create("InteractiveLabel")
-    btn:SetWidth(145)
+    btn:SetWidth(150)
     btn:SetText(string.format(" %s ", L["Date"]))
     btn:SetJustifyH("LEFT")
     btn.highlight:SetColorTexture(0.3, 0.3, 0.3, 0.5)
@@ -109,15 +109,12 @@ function LA:CreateGUI()
 
 	scrollFrame = CreateFrame("ScrollFrame", nil, scrollContainer.frame, "_HybridScrollFrame")
 	HybridScrollFrame_CreateButtons(scrollFrame, "_HybridScrollListItemTemplate")
-	scrollFrame.update = function() LA:UpdateTableView() end
+	scrollFrame.update = function() LA:RedrawRows() end
 end
 
-function LA:RefreshLayout()
+function LA:RedrawRows()
 	local buttons = HybridScrollFrame_GetButtons(scrollFrame)
     local offset = HybridScrollFrame_GetOffset(scrollFrame)
-
-    rows = self:GenerateRows()
-    f:SetStatusText(string.format(L["%d records"], #rows))
 
     for buttonIndex = 1, #buttons do
 		local button = buttons[buttonIndex]
@@ -130,6 +127,13 @@ function LA:RefreshLayout()
             self:GetItemMixin(row["id"], function(itemMixin)
                 button.Icon:SetTexture(itemMixin:GetItemIcon())
                 button.Item:SetText(itemMixin:GetItemLink())
+                button.IconAndItem:EnableMouse(true)
+                button.IconAndItem:SetScript("OnEnter", function()
+                    AceGUI.tooltip:SetOwner(button.IconAndItem, "ANCHOR_TOP")
+                    AceGUI.tooltip:SetHyperlink(itemMixin:GetItemLink())
+                    AceGUI.tooltip:Show()
+                end)
+                button.IconAndItem:SetScript("OnLeave", function() self:HideTooltip() end)
             end)
             button.PlayerName:SetText(row["player"])
             button.Reason:SetText(row["reason"])
@@ -149,13 +153,19 @@ function LA:RefreshLayout()
 	HybridScrollFrame_Update(scrollFrame, totalHeight, shownHeight)
 end
 
+function LA:UpdateRows()
+    rows = self:GenerateRows()
+    f:SetStatusText(string.format(L["%d records"], #rows))
+end
+
 function LA:ShowGUI()
     if not f then
         self:CreateGUI()
     end
 
     f:Show()
-    self:RefreshLayout()
+    self:UpdateRows()
+    self:RedrawRows()
 end
 
 function LA:IsGUIVisible()
@@ -177,13 +187,15 @@ end
 function LA:SortRows(column)
     scrollFrame:SetVerticalScroll(0)
     self:SetSort(column)
-    self:RefreshLayout()
+    self:UpdateRows()
+    self:RedrawRows()
 end
 
 function LA:FilterRows(text)
     scrollFrame:SetVerticalScroll(0)
     self:SetFilter(text)
-    self:RefreshLayout()
+    self:UpdateRows()
+    self:RedrawRows()
 end
 
 function LA:HumanDuration(miliseconds)

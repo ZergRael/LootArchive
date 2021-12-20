@@ -332,7 +332,8 @@ function LA:StoreLootAwarded(itemMixin, playerName, reason)
     self:LiveSync(loot)
 
     if self:IsGUIVisible() then
-        self:RefreshLayout()
+        self:UpdateRows()
+        self:RedrawRows()
     end
 
     return true
@@ -525,7 +526,7 @@ function LA:GenerateRows(sortColumn, filter)
     end
 
     for _, row in ipairs(self.db.factionrealm.history[self.currentGuild].loots) do
-        if not filter or strfind(row["item"], filter) or strfind(row["player"], filter) then
+        if not filter or strfind(row["item"], filter) or strfind(strlower(row["player"]), filter) then
             table.insert(tbl, row)
         end
     end

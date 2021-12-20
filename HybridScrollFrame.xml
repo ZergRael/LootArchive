@@ -48,6 +48,14 @@
                 </Texture>
             </Layer>
         </Layers>
+        <Frames>
+            <Frame parentKey="IconAndItem" justifyH="LEFT">
+                <Size x="170" y="24"/>
+                <Anchors>
+                    <Anchor point="LEFT" x="4" y="0"/>
+                </Anchors>
+            </Frame>
+        </Frames>
     </Frame>
 
     <Frame name="_HybridScrollFrame" inherits="HybridScrollFrameTemplate" virtual="true">
