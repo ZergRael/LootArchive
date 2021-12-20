@@ -44,9 +44,9 @@ function LA:OnInitialize()
     self:FetchCurrentGuild()
 
     -- Events register
-    self:RegisterEvent("LOOT_OPENED")
+    -- self:RegisterEvent("LOOT_OPENED")
     -- self:RegisterEvent("CHAT_MSG_LOOT")
-    self:RegisterEvent("OPEN_MASTER_LOOT_LIST")
+    -- self:RegisterEvent("OPEN_MASTER_LOOT_LIST")
     self:RegisterEvent("PLAYER_GUILD_UPDATE")
 
     -- Hooks
@@ -66,7 +66,7 @@ end
 -- This could be used to trigger something in raids
 -- probably useless but I like this event
 function LA:LOOT_OPENED(eventName)
-    -- self:Print("LOOT_OPENED")
+    self:Print("DEBUG:LOOT_OPENED")
 end
 
 -- Required to get player current guild after login
@@ -79,19 +79,19 @@ end
 
 -- This is spammy
 function LA:CHAT_MSG_LOOT(eventName)
-    self:Print("CHAT_MSG_LOOT")
+    self:Print("DEBUG:CHAT_MSG_LOOT")
 end
 
 -- Probably not needed
 function LA:OPEN_MASTER_LOOT_LIST(eventName)
-    self:Print("OPEN_MASTER_LOOT_LIST")
+    self:Print("DEBUG:OPEN_MASTER_LOOT_LIST")
 end
 
 -- Hook on ML distribution to ease recording
 function LA:GiveMasterLoot(slotId, candidateId, ...)
     local candidate = tostring(GetMasterLootCandidate(candidateId))
     local itemLink = tostring(GetLootSlotLink(slotId))
-    self:Print("GiveMasterLoot", itemLink, candidate)
+    self:Print("DEBUG:GiveMasterLoot", itemLink, candidate)
 
     self:GetItemMixin(itemLink, function(itemMixin)
         self:Award(itemMixin, candidate)
@@ -233,7 +233,7 @@ end
 -- Guess proper playername from current raid roster based on slug
 -- may need to keep a daily cache of known playernames
 function LA:GuessPlayerName(playerName)
-    self:Print("GuessPlayerName", playerName)
+    -- self:Print("GuessPlayerName", playerName)
     if not playerName then
         return
     end
@@ -265,7 +265,7 @@ function LA:GuessPlayerName(playerName)
     -- Perfect match
     for _, unit in ipairs(roster) do
         if unit["slug"] == playerSlug then
-            self:Print("Perfect match", unit["name"])
+            -- self:Print("Perfect match", unit["name"])
             return unit["name"]
         end
     end
@@ -273,7 +273,7 @@ function LA:GuessPlayerName(playerName)
     -- Contains
     for _, unit in ipairs(roster) do
         if strfind(unit["slug"], playerSlug) then
-            self:Print("Match contains", unit["name"])
+            -- self:Print("Match contains", unit["name"])
             return unit["name"]
         end
     end
@@ -281,7 +281,7 @@ function LA:GuessPlayerName(playerName)
     -- Strip accents
     for _, unit in ipairs(roster) do
         if strfind(unit["stripped"], playerSlug) then
-            self:Print("Match stripped", unit["name"])
+            -- self:Print("Match stripped", unit["name"])
             return unit["name"]
         end
     end
@@ -361,7 +361,7 @@ function LA:RequestDBSync()
     if not IsInGuild() then
         return
     end
-    self:Print("RequestDBSync")
+    -- self:Print("DEBUG:RequestDBSync")
 
     local timestamp = 0
     if self.db.factionrealm.history[self.currentGuild] then
@@ -373,7 +373,7 @@ end
 
 -- Receive database sync request
 function LA:ReceiveRequestSyncDB(prefix, msg, channel, sender)
-    self:Print("ReceiveRequestSyncDB", prefix, msg, channel, sender)
+    self:Print("DEBUG:ReceiveRequestSyncDB", prefix, msg, channel, sender)
     if channel == "GUILD" then
         -- This is a post-login _REQ, just answer with our own timestamp
         if self.db.factionrealm.history[self.currentGuild] then
@@ -404,7 +404,7 @@ end
 
 -- Process bucketed sync database offers
 function LA:ProcessSyncDBOffers()
-    self:Print("ProcessSyncDBOffers")
+    self:Print("DEBUG:ProcessSyncDBOffers")
     self.requestSyncTimer = nil
 
     local sender, mostRecentTimestamp = nil, 0
@@ -431,7 +431,7 @@ end
 
 -- Trigger database sync with other guild members
 function LA:SyncDB(playerName)
-    self:Print("SyncDB", playerName)
+    self:Print("DEBUG:SyncDB", playerName)
     self:SendCommMessage(addonName.."_BULK", self:Serialize(self.db.factionrealm.history[self.currentGuild]), "WHISPER", playerName, "BULK")
 end
 
@@ -439,7 +439,7 @@ end
 function LA:ReceiveSyncDB(prefix, msg, channel, sender)
     local success, data = self:Deserialize(msg)
     if not success then
-        self:Print("Failed to deserialize bulk data")
+        self:Print("DEBUG:Failed to deserialize bulk data")
         return
     end
 
