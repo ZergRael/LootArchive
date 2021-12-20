@@ -20,7 +20,7 @@ function LA:CreateGUI()
     local frameName = addonName .."_MainFrame"
 	_G[frameName] = f
 	table.insert(UISpecialFrames, frameName) -- Allow ESC close
-    f:SetStatusText("Status Bar")
+    -- f:SetStatusText("Status Bar")
     f:SetLayout("Flow")
     
     -- SEARCH HEADER
@@ -29,21 +29,21 @@ function LA:CreateGUI()
 	searchHeader:SetLayout("Flow")
     f:AddChild(searchHeader)
 
-    local block = AceGUI:Create("SimpleGroup")
-    block:SetRelativeWidth(0.2)
-    searchHeader:AddChild(block)
+    -- local block = AceGUI:Create("SimpleGroup")
+    -- block:SetRelativeWidth(0.2)
+    -- searchHeader:AddChild(block)
 
     local searchBox = AceGUI:Create("EditBox")
     searchBox:SetLabel(L["Search for item or player"])
-    searchBox:SetRelativeWidth(0.6)
+    searchBox:SetFullWidth(true)
     searchBox:SetCallback("OnEnterPressed", function(widget, event, text)
         LA:FilterRows(text)
     end)
     searchHeader:AddChild(searchBox)
 
-    block = AceGUI:Create("SimpleGroup")
-    block:SetRelativeWidth(0.2)
-    searchHeader:AddChild(block)
+    -- block = AceGUI:Create("SimpleGroup")
+    -- block:SetRelativeWidth(0.2)
+    -- searchHeader:AddChild(block)
 
     -- TABLE HEADER
     local tableHeader = AceGUI:Create("SimpleGroup")
@@ -93,7 +93,7 @@ function LA:CreateGUI()
     tableHeader:AddChild(margin)
 
     btn = AceGUI:Create("InteractiveLabel")
-    btn:SetWidth(94)
+    btn:SetWidth(145)
     btn:SetText(string.format(" %s ", L["Date"]))
     btn:SetJustifyH("LEFT")
     btn.highlight:SetColorTexture(0.3, 0.3, 0.3, 0.5)
@@ -116,7 +116,8 @@ function LA:RefreshLayout()
 	local buttons = HybridScrollFrame_GetButtons(scrollFrame)
     local offset = HybridScrollFrame_GetOffset(scrollFrame)
 
-    f:SetStatusText(string.format("Status text"))
+    rows = self:GenerateRows()
+    f:SetStatusText(string.format(L["%d records"], #rows))
 
     for buttonIndex = 1, #buttons do
 		local button = buttons[buttonIndex]
@@ -153,8 +154,6 @@ function LA:ShowGUI()
         self:CreateGUI()
     end
 
-    rows = LA:GenerateRows()
-
     f:Show()
     self:RefreshLayout()
 end
@@ -178,14 +177,12 @@ end
 function LA:SortRows(column)
     scrollFrame:SetVerticalScroll(0)
     self:SetSort(column)
-    rows = self:GenerateRows()
     self:RefreshLayout()
 end
 
 function LA:FilterRows(text)
     scrollFrame:SetVerticalScroll(0)
     self:SetFilter(text)
-    rows = self:GenerateRows()
     self:RefreshLayout()
 end
 

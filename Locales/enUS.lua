@@ -50,6 +50,7 @@ L["Player"] = "Player"
 L["Reason"] = "Reason"
 L["Date"] = "Date"
 L["Search for item or player"] = "Search for item or player"
+L["%d records"] = "%d records"
 
 -- Time
 L["%is"] = "%is"

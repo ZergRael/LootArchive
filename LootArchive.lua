@@ -128,7 +128,7 @@ end
 
 -- Start tracking item from console item link
 function LA:AddFromConsole(itemIdOrLink)
-    self:Print("AddFromConsole", itemIdOrLink)
+    -- self:Print("AddFromConsole", itemIdOrLink)
     if not itemIdOrLink then
         return
     end
@@ -140,7 +140,7 @@ end
 
 -- Announce and start tracking item for later award process
 function LA:TrackItem(itemMixin)
-    self:Print("TrackItem", itemMixin:GetItemName())
+    -- self:Print("TrackItem", itemMixin:GetItemName())
 
     local itemLink = itemMixin:GetItemLink()
 
@@ -153,7 +153,7 @@ end
 
 -- Award item to player, based on args and self.trackedItem
 function LA:GiveFromConsole(itemIdOrLinkOrPlayerName, exact)
-    self:Print("GiveFromConsole", itemIdOrLinkOrPlayerName)
+    -- self:Print("GiveFromConsole", itemIdOrLinkOrPlayerName)
 
     local itemIdOrLink, playerName, reason
     -- Match first item
@@ -212,7 +212,7 @@ function LA:GiveFromConsole(itemIdOrLinkOrPlayerName, exact)
     -- self:Print(itemIdOrLink, playerName, reason)
     self:GetItemMixin(itemIdOrLink, function(itemMixin)
         if self:Award(itemMixin, playerName, reason) then
-            if not itemIdOrLink then
+            if self.trackedItem and self.trackedItem:GetItemID() == itemMixin:GetItemID() then
                 self.trackedItem = nil
             end
         end
@@ -321,14 +321,19 @@ end
 
 -- Store item distribution in database
 function LA:StoreLootAwarded(itemMixin, playerName, reason)
-    local loot = {id = itemMixin:GetItemID(), item = itemMixin:GetItemName(), player = playerName, reason = reason, date = time()}
+    local loot = {id = itemMixin:GetItemID(), item = strlower(itemMixin:GetItemName()), player = playerName, reason = reason, date = time()}
     if not self.db.factionrealm.history[self.currentGuild] then
+        self.db.factionrealm.history[self.currentGuild] = {}
         self.db.factionrealm.history[self.currentGuild].loots = {}
         self.db.factionrealm.history[self.currentGuild].timestamp = nil
     end
     tinsert(self.db.factionrealm.history[self.currentGuild].loots, loot)
     self.db.factionrealm.history[self.currentGuild].timestamp = time()
     self:LiveSync(loot)
+
+    if self:IsGUIVisible() then
+        self:RefreshLayout()
+    end
 
     return true
 end
@@ -355,6 +360,7 @@ function LA:RequestDBSync()
     if not IsInGuild() then
         return
     end
+    self:Print("RequestDBSync")
 
     local timestamp = 0
     if self.db.factionrealm.history[self.currentGuild] then
@@ -366,6 +372,7 @@ end
 
 -- Receive database sync request
 function LA:ReceiveRequestSyncDB(prefix, msg, channel, sender)
+    self:Print("ReceiveRequestSyncDB", prefix, msg, channel, sender)
     if channel == "GUILD" then
         -- This is a post-login _REQ, just answer with our own timestamp
         if self.db.factionrealm.history[self.currentGuild] then
@@ -396,6 +403,7 @@ end
 
 -- Process bucketed sync database offers
 function LA:ProcessSyncDBOffers()
+    self:Print("ProcessSyncDBOffers")
     self.requestSyncTimer = nil
 
     local sender, mostRecentTimestamp = nil, 0
@@ -422,6 +430,7 @@ end
 
 -- Trigger database sync with other guild members
 function LA:SyncDB(playerName)
+    self:Print("SyncDB", playerName)
     self:SendCommMessage(addonName.."_BULK", self:Serialize(self.db.factionrealm.history[self.currentGuild]), "WHISPER", playerName, "BULK")
 end
 
@@ -510,8 +519,13 @@ function LA:GenerateRows(sortColumn, filter)
         return tbl
     end
 
+    local filter = nil
+    if self.gui.filter then
+        filter = strlower(self.gui.filter)
+    end
+
     for _, row in ipairs(self.db.factionrealm.history[self.currentGuild].loots) do
-        if not self.gui.filter or strfind(row["item"], self.gui.filter) or strfind(row["player"], self.gui.filter) then
+        if not filter or strfind(row["item"], filter) or strfind(row["player"], filter) then
             table.insert(tbl, row)
         end
     end
