@@ -558,7 +558,3 @@ function LA:CleanupDatabase()
         removemulti(self.db.factionrealm.history[self.currentGuild].loots, self.db.profile.maxHistory, count - self.db.profile.maxHistory)
     end
 end
-
-function LA:StrRemove(s, el)
-    return strtrim(strtrim(gsub(s, gsub(gsub(el, "%[", "%%[", 1), "%]", "%%]", 1), "", 1)))
-end

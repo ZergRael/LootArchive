@@ -65,3 +65,7 @@ function LA:PrintArray(arr)
         self:Print(i, "=", value)
     end
 end
+
+function LA:StrRemove(s, el)
+    return strtrim(strtrim(gsub(s, gsub(gsub(el, "%[", "%%[", 1), "%]", "%%]", 1), "", 1)))
+end
