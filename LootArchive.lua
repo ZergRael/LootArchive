@@ -369,7 +369,7 @@ function LA:ReceiveRequestSyncDB(prefix, msg, channel, sender)
     if channel == "GUILD" then
         -- This is a post-login _REQ, just answer with our own timestamp
         if self.db.factionrealm.history[self.currentGuild] then
-            self:SendCommMessage(addonName.."_REQ", self:Serialise({state = "OFFER", timestamp = self.db.factionrealm.history[self.currentGuild].timestamp}), "WHISPER", sender)
+            self:SendCommMessage(addonName.."_REQ", self:Serialize({state = "OFFER", timestamp = self.db.factionrealm.history[self.currentGuild].timestamp}), "WHISPER", sender)
         end
 
         return
@@ -399,12 +399,13 @@ function LA:ProcessSyncDBOffers()
     self.requestSyncTimer = nil
 
     local sender, mostRecentTimestamp = nil, 0
-    for i,v in ipairs(self.requestSyncTimer) do
+    for i,v in ipairs(self.requestSyncBucket) do
         if v["timestamp"] > mostRecentTimestamp then
             sender = v["sender"]
             mostRecentTimestamp = v["timestamp"]
         end
     end
+    self.requestSyncBucket = {}
 
     if sender then
         -- Only send data if our timestamp is too old
@@ -415,7 +416,7 @@ function LA:ProcessSyncDBOffers()
             end
         end
 
-        self:SendCommMessage(addonName.."_REQ", self:Serialise({state = "ACCEPT"}), "WHISPER", sender)
+        self:SendCommMessage(addonName.."_REQ", self:Serialize({state = "ACCEPT"}), "WHISPER", sender)
     end
 end
 
