@@ -467,7 +467,7 @@ function LA:DrawMinimapIcon()
 	{
 		type = "data source",
 		text = addonName,
-        icon = "interface/icons/inv_misc_key_02",
+        icon = "interface/icons/inv_misc_ornatebox",
 		OnClick = function(self, button)
 			if (button == "RightButton") then
                 InterfaceOptionsFrame_OpenToCategory(addonName)
