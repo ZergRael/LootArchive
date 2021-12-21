@@ -66,7 +66,7 @@ end
 -- This could be used to trigger something in raids
 -- probably useless but I like this event
 function LA:LOOT_OPENED(eventName)
-    self:Print("DEBUG:LOOT_OPENED")
+    -- self:Print("DEBUG:LOOT_OPENED")
 end
 
 -- Required to get player current guild after login
@@ -79,12 +79,12 @@ end
 
 -- This is spammy
 function LA:CHAT_MSG_LOOT(eventName)
-    self:Print("DEBUG:CHAT_MSG_LOOT")
+    -- self:Print("DEBUG:CHAT_MSG_LOOT")
 end
 
 -- Probably not needed
 function LA:OPEN_MASTER_LOOT_LIST(eventName)
-    self:Print("DEBUG:OPEN_MASTER_LOOT_LIST")
+    -- self:Print("DEBUG:OPEN_MASTER_LOOT_LIST")
 end
 
 -- Hook on ML distribution to ease recording
@@ -384,7 +384,7 @@ end
 
 -- Receive database sync request
 function LA:ReceiveRequestSyncDB(prefix, msg, channel, sender)
-    self:Print("DEBUG:ReceiveRequestSyncDB", prefix, msg, channel, sender)
+    -- self:Print("DEBUG:ReceiveRequestSyncDB", prefix, msg, channel, sender)
 
     if sender == UnitName("player") then
         return
@@ -419,7 +419,7 @@ end
 
 -- Process bucketed sync database offers
 function LA:ProcessSyncDBOffers()
-    self:Print("DEBUG:ProcessSyncDBOffers")
+    -- self:Print("DEBUG:ProcessSyncDBOffers")
     self.requestSyncTimer = nil
 
     local sender, mostRecentTimestamp = nil, 0
@@ -436,29 +436,29 @@ function LA:ProcessSyncDBOffers()
         if self.db.factionrealm.history[self.currentGuild] then
             local diff = abs(self.db.factionrealm.history[self.currentGuild].timestamp - mostRecentTimestamp)
             if diff < syncThresholdSeconds then
-                self:Print("DEBUG:ProcessSyncDBOffers: No recent offers, bail")
+                -- self:Print("DEBUG:ProcessSyncDBOffers: No recent offers, bail")
                 return
             end
         end
 
-        self:Print("DEBUG:ProcessSyncDBOffers: Accept offer from", sender)
+        -- self:Print("DEBUG:ProcessSyncDBOffers: Accept offer from", sender)
         self:SendCommMessage(addonName.."_REQ", self:Serialize({state = "ACCEPT"}), "WHISPER", sender)
     end
 end
 
 -- Trigger database sync with other guild members
 function LA:SyncDB(playerName)
-    self:Print("DEBUG:SyncDB", playerName)
+    -- self:Print("DEBUG:SyncDB", playerName)
     self:SendCommMessage(addonName.."_BULK", self:Serialize(self.db.factionrealm.history[self.currentGuild]), "WHISPER", playerName, "BULK")
 end
 
 -- Receive DB contents
 function LA:ReceiveSyncDB(prefix, msg, channel, sender)
-    self:Print("DEBUG:ReceiveSyncDB", prefix, channel, sender)
+    -- self:Print("DEBUG:ReceiveSyncDB", prefix, channel, sender)
 
     local success, data = self:Deserialize(msg)
     if not success then
-        self:Print("DEBUG:Failed to deserialize bulk data")
+        -- self:Print("DEBUG:Failed to deserialize bulk data")
         return
     end
 
@@ -472,7 +472,7 @@ end
 
 -- Send live distribution addition / removal
 function LA:LiveSync(loot, state)
-    self:Print("DEBUG:LiveSync", loot, state)
+    -- self:Print("DEBUG:LiveSync", loot, state)
 
     loot["state"] = state
     self:SendCommMessage(addonName.."_LIVE", self:Serialize(loot), "GUILD")
@@ -480,7 +480,7 @@ end
 
 -- Receive live distribution addition / removal
 function LA:ReceiveLiveSync(prefix, msg, channel, sender)
-    self:Print("DEBUG:ReceiveLiveSync", prefix, msg, channel, sender)
+    -- self:Print("DEBUG:ReceiveLiveSync", prefix, msg, channel, sender)
 
     if sender == UnitName("player") then
         return
@@ -488,7 +488,7 @@ function LA:ReceiveLiveSync(prefix, msg, channel, sender)
 
     local success, loot = self:Deserialize(msg)
     if not success then
-        self:Print("DEBUG:Failed to deserialize bulk data")
+        -- self:Print("DEBUG:Failed to deserialize bulk data")
         return
     end
 
