@@ -434,10 +434,12 @@ function LA:ProcessSyncDBOffers()
         if self.db.factionrealm.history[self.currentGuild] then
             local diff = abs(self.db.factionrealm.history[self.currentGuild].timestamp - mostRecentTimestamp)
             if diff < syncThresholdSeconds then
+                self:Print("DEBUG:ProcessSyncDBOffers: No recent offers, bail")
                 return
             end
         end
 
+        self:Print("DEBUG:ProcessSyncDBOffers: Accept offer from", sender)
         self:SendCommMessage(addonName.."_REQ", self:Serialize({state = "ACCEPT"}), "WHISPER", sender)
     end
 end
@@ -450,7 +452,7 @@ end
 
 -- Receive DB contents
 function LA:ReceiveSyncDB(prefix, msg, channel, sender)
-    self:Print("DEBUG:ReceiveSyncDB", prefix, msg, channel, sender)
+    self:Print("DEBUG:ReceiveSyncDB", prefix, channel, sender)
 
     local success, data = self:Deserialize(msg)
     if not success then
@@ -459,6 +461,11 @@ function LA:ReceiveSyncDB(prefix, msg, channel, sender)
     end
 
     self.db.factionrealm.history[self.currentGuild] = data
+
+    if self:IsGUIVisible() then
+        self:UpdateRows()
+        self:RedrawRows()
+    end
 end
 
 -- Send live distribution addition / removal
@@ -494,6 +501,11 @@ function LA:ReceiveLiveSync(prefix, msg, channel, sender)
         -- We can assume this loot timestamp is the most recent, keep it as is
         self.db.factionrealm.history[self.currentGuild].timestamp = loot["date"]
     end
+
+    if self:IsGUIVisible() then
+        self:UpdateRows()
+        self:RedrawRows()
+    end
 end
 
 -- Create empty database if necessary before add/remove operations
@@ -515,6 +527,11 @@ end
 function LA:ResetDatabase()
     self.db:ResetDB()
     self:Print(L["Database reset"])
+
+    if self:IsGUIVisible() then
+        self:UpdateRows()
+        self:RedrawRows()
+    end
 end
 
 -- Draw minimap icons and bind buttons
@@ -612,6 +629,11 @@ function LA:CleanupDatabase()
     local count = #self.db.factionrealm.history[self.currentGuild].loots
     if count > self.db.profile.maxHistory then
         removemulti(self.db.factionrealm.history[self.currentGuild].loots, self.db.profile.maxHistory, count - self.db.profile.maxHistory)
+
+        if self:IsGUIVisible() then
+            self:UpdateRows()
+            self:RedrawRows()
+        end
     end
 end
 
