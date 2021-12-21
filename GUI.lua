@@ -29,10 +29,6 @@ function LA:CreateGUI()
 	searchHeader:SetLayout("Flow")
     f:AddChild(searchHeader)
 
-    -- local block = AceGUI:Create("SimpleGroup")
-    -- block:SetRelativeWidth(0.2)
-    -- searchHeader:AddChild(block)
-
     local searchBox = AceGUI:Create("EditBox")
     searchBox:SetLabel(L["Search for item or player"])
     searchBox:SetFullWidth(true)
@@ -41,9 +37,13 @@ function LA:CreateGUI()
     end)
     searchHeader:AddChild(searchBox)
 
-    -- block = AceGUI:Create("SimpleGroup")
-    -- block:SetRelativeWidth(0.2)
-    -- searchHeader:AddChild(block)
+    -- BUTTONS
+    local exportButton = AceGUI:Create("Button")
+	exportButton:SetCallback("OnClick", function() LA:ExportDatabase() end)
+	exportButton:SetHeight(20)
+	exportButton:SetWidth(100)
+	exportButton:SetText(L["Export"])
+    searchHeader:AddChild(exportButton)
 
     -- TABLE HEADER
     local tableHeader = AceGUI:Create("SimpleGroup")
@@ -110,15 +110,6 @@ function LA:CreateGUI()
 	scrollFrame = CreateFrame("ScrollFrame", nil, scrollContainer.frame, "_HybridScrollFrame")
 	HybridScrollFrame_CreateButtons(scrollFrame, "_HybridScrollListItemTemplate")
 	scrollFrame.update = function() LA:RedrawRows() end
-
-    -- BUTTONS
-    local exportButton = AceGUI:Create("Button")
-	exportButton:SetCallback("OnClick", function() LA:ExportDatabase() end)
-	exportButton:SetHeight(20)
-	exportButton:SetWidth(100)
-	exportButton:SetText(L["Export"])
-    f:AddChild(exportButton)
-	exportButton:SetPoint("BOTTOMRIGHT", -120, -23)
 end
 
 function LA:RedrawRows()
