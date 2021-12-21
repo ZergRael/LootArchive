@@ -48,6 +48,7 @@ Responds to console with **/la** and a minimap button.
 ## Known issues
 
 - May not handle LootMaster distribution properly, this needs to be tested
+- Item translations in database may be scrambled with foreign clients
 - A crapload of debug messages, it's an alpha, sorry
 
 ## Contribution

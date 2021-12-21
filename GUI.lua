@@ -112,12 +112,13 @@ function LA:CreateGUI()
 	scrollFrame.update = function() LA:RedrawRows() end
 
     -- BUTTONS
-    local exportButton = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
-	exportButton:SetScript("OnClick", function() LA:ExportDatabase() end)
-	exportButton:SetPoint("BOTTOMRIGHT", -137, 17)
+    local exportButton = AceGUI:Create("Button")
+	exportButton:SetCallback("OnClick", function() LA:ExportDatabase() end)
 	exportButton:SetHeight(20)
 	exportButton:SetWidth(100)
 	exportButton:SetText(L["Export"])
+    f:AddChild(exportButton)
+	exportButton:SetPoint("BOTTOMRIGHT", -120, -23)
 end
 
 function LA:RedrawRows()

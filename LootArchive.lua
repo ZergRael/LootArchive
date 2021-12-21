@@ -632,7 +632,7 @@ function LA:ExportDatabase()
         hasEditBox = true,
         OnShow = function (self)
             self.editBox:SetText(str)
-            self.editBox:SetFocus(true)
+            self.editBox:HighlightText()
         end,
         timeout = 0,
         whileDead = true,
