@@ -41,7 +41,10 @@
     "strtrim",
     "date",
     "strjoin",
-    "abs"
+    "abs",
+    "StaticPopupDialogs",
+    "StaticPopup_Show",
+    "OKAY"
   ],
   "Lua.runtime.version": "Lua 5.1"
 }

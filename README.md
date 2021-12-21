@@ -23,6 +23,9 @@ Responds to console with **/la** and a minimap button.
 
 ![](https://img.thetabx.net/mN0yt.png)
 
+- CSV / Excel export
+- Live database synchronization on loot distribution
+
 ## Commands
 
 - /la add (item ID or item link)
@@ -38,10 +41,8 @@ Responds to console with **/la** and a minimap button.
 
 ## Todo
 
-- Live database synchronization on loot distribution (for now players will sync only on login)
 - One way database synchronization based on guild ranks to disallow spoofing
 - Editable rows for typo fixes or late redistribution
-- CSV / Excel export
 - Anything you would like ? Please create an [issue on Github](https://github.com/ZergRael/LootArchive/issues)
 
 ## Known issues

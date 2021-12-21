@@ -369,7 +369,7 @@ end
 
 -- Send guild broadcast database sync request
 function LA:RequestDBSync()
-    if not IsInGuild() then
+    if not self.currentGuild then
         return
     end
     -- self:Print("DEBUG:RequestDBSync")
@@ -613,4 +613,32 @@ function LA:CleanupDatabase()
     if count > self.db.profile.maxHistory then
         removemulti(self.db.factionrealm.history[self.currentGuild].loots, self.db.profile.maxHistory, count - self.db.profile.maxHistory)
     end
+end
+
+-- Export database as CSV
+function LA:ExportDatabase()
+    if not self.currentGuild then
+        return
+    end
+
+    local str = "ID,Item,Player,Reason,Date\r\n"
+    for i,v in ipairs(self.db.factionrealm.history[self.currentGuild].loots) do
+        str = str..strjoin(",", v["id"], v["item"], v["player"], v["reason"], v["date"]).."\r\n"
+    end
+
+    StaticPopupDialogs[addonName.."_Popup"] = {
+        text = "Copy and paste this as a CSV file.",
+        button1 = OKAY,
+        hasEditBox = true,
+        OnShow = function (self)
+            self.editBox:SetText(str)
+            self.editBox:SetFocus(true)
+        end,
+        timeout = 0,
+        whileDead = true,
+        hideOnEscape = true,
+        preferredIndex = 3,
+    }
+
+    StaticPopup_Show(addonName.."_Popup")
 end

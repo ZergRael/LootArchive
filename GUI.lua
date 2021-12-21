@@ -110,6 +110,14 @@ function LA:CreateGUI()
 	scrollFrame = CreateFrame("ScrollFrame", nil, scrollContainer.frame, "_HybridScrollFrame")
 	HybridScrollFrame_CreateButtons(scrollFrame, "_HybridScrollListItemTemplate")
 	scrollFrame.update = function() LA:RedrawRows() end
+
+    -- BUTTONS
+    local exportButton = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+	exportButton:SetScript("OnClick", function() LA:ExportDatabase() end)
+	exportButton:SetPoint("BOTTOMRIGHT", -137, 17)
+	exportButton:SetHeight(20)
+	exportButton:SetWidth(100)
+	exportButton:SetText(L["Export"])
 end
 
 function LA:RedrawRows()
