@@ -44,7 +44,8 @@
     "abs",
     "StaticPopupDialogs",
     "StaticPopup_Show",
-    "OKAY"
+    "OKAY",
+    "UnitName"
   ],
   "Lua.runtime.version": "Lua 5.1"
 }

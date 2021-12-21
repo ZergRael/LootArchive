@@ -386,7 +386,9 @@ end
 function LA:ReceiveRequestSyncDB(prefix, msg, channel, sender)
     self:Print("DEBUG:ReceiveRequestSyncDB", prefix, msg, channel, sender)
 
-    -- TODO: Ignore our own messages
+    if sender == UnitName("player") then
+        return
+    end
 
     if channel == "GUILD" then
         -- This is a post-login _REQ, just answer with our own timestamp
@@ -480,7 +482,9 @@ end
 function LA:ReceiveLiveSync(prefix, msg, channel, sender)
     self:Print("DEBUG:ReceiveLiveSync", prefix, msg, channel, sender)
 
-    -- TODO: Ignore our own messages
+    if sender == UnitName("player") then
+        return
+    end
 
     local success, loot = self:Deserialize(msg)
     if not success then
