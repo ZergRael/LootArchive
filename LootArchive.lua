@@ -5,7 +5,8 @@ local LA = LibStub("AceAddon-3.0"):NewAddon(addonName, "AceConsole-3.0", "AceEve
 local L = LibStub("AceLocale-3.0"):GetLocale(addonName, true)
 local libDBIcon = LibStub("LibDBIcon-1.0")
 
-local syncThresholdSeconds = 100
+local syncThresholdSeconds = 100 -- Loot timestamps acceptable difference
+local syncWaitSeconds = 4 -- Wait time before processing database sync offers
 
 -- Addon init
 function LA:OnInitialize()
@@ -225,7 +226,7 @@ end
 
 -- Announce and store valid item distribution
 function LA:Award(itemMixin, playerName, reason)
-    -- TODO : Should we also announce reason ?
+    -- TODO: Should we also announce reason ?
     if self:StoreLootAwarded(itemMixin, playerName, reason) then
         self:Announce(format(self.db.profile.awardStr, itemMixin:GetItemLink(), playerName))
         return true
@@ -235,7 +236,7 @@ function LA:Award(itemMixin, playerName, reason)
 end
 
 -- Guess proper playername from current raid roster based on slug
--- may need to keep a daily cache of known playernames
+-- TODO: May need to keep a cache of known playernames
 function LA:GuessPlayerName(playerName)
     -- self:Print("GuessPlayerName", playerName)
     if not playerName then
@@ -410,7 +411,7 @@ function LA:ReceiveRequestSyncDB(prefix, msg, channel, sender)
 
         -- Wait for a few seconds and process offers
         if not self.requestSyncTimer then
-            self.requestSyncTimer = self:ScheduleTimer("ProcessSyncDBOffers", 10)
+            self.requestSyncTimer = self:ScheduleTimer("ProcessSyncDBOffers", syncWaitSeconds)
         end
     elseif data["state"] == "ACCEPT" then
         self:SyncDB(sender)
@@ -431,6 +432,7 @@ function LA:ProcessSyncDBOffers()
     end
     self.requestSyncBucket = {}
 
+    -- self:Print("DEBUG:ProcessSyncDBOffers: Best offer by", sender) 
     if sender then
         -- Only send data if our timestamp is too old
         if self.db.factionrealm.history[self.currentGuild] then
@@ -454,7 +456,7 @@ end
 
 -- Receive DB contents
 function LA:ReceiveSyncDB(prefix, msg, channel, sender)
-    -- self:Print("DEBUG:ReceiveSyncDB", prefix, channel, sender)
+    -- self:Print("DEBUG:ReceiveSyncDB", prefix, channel, sender, #msg)
 
     local success, data = self:Deserialize(msg)
     if not success then
