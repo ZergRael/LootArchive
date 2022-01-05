@@ -329,7 +329,7 @@ function LA:StoreLootAwarded(itemMixin, playerName, reason)
     local now = time()
     local loot = {
         id = itemMixin:GetItemID(),
-        item = strlower(itemMixin:GetItemName()), -- TODO: Don't store this
+        item = strlower(itemMixin:GetItemName()), -- It's fine to store this as we remove it from sync
         player = playerName,
         reason = reason,
         date = now
@@ -451,7 +451,20 @@ end
 -- Trigger database sync with other guild members
 function LA:SyncDB(playerName)
     -- self:Print("DEBUG:SyncDB", playerName)
-    self:SendCommMessage(addonName.."_BULK", self:Serialize(self.db.factionrealm.history[self.currentGuild]), "WHISPER", playerName, "BULK")
+    local tbl = {}
+    for _, row in ipairs(self.db.factionrealm.history[self.currentGuild].loots) do
+        tinsert(tbl, {
+            id = row["id"],
+            player = row["player"],
+            reason = row["reason"],
+            date = row["date"],
+        })
+    end
+
+    self:SendCommMessage(addonName.."_BULK", self:Serialize({
+        timestamp = self.db.factionrealm.history[self.currentGuild].timestamp,
+        loots = tbl
+    }), "WHISPER", playerName, "BULK")
 end
 
 -- Receive DB contents
@@ -465,6 +478,13 @@ function LA:ReceiveSyncDB(prefix, msg, channel, sender)
     end
 
     self.db.factionrealm.history[self.currentGuild] = data
+    -- Rebuild local item name cache
+    for _, row in ipairs(self.db.factionrealm.history[self.currentGuild].loots) do
+        self:GetItemMixin(row["id"], function(itemMixin)
+            -- NOTE: This may break if wow cache is empty, this needs testing
+            row["item"] = strlower(itemMixin:GetItemName())
+        end)
+    end
 
     if self:IsGUIVisible() then
         self:UpdateRows()
@@ -476,8 +496,14 @@ end
 function LA:LiveSync(loot, state)
     -- self:Print("DEBUG:LiveSync", loot, state)
 
-    loot["state"] = state
-    self:SendCommMessage(addonName.."_LIVE", self:Serialize(loot), "GUILD")
+    local row = {
+        id = loot["id"],
+        player = loot["player"],
+        reason = loot["reason"],
+        date = loot["date"],
+        state = state,
+    }
+    self:SendCommMessage(addonName.."_LIVE", self:Serialize(row), "GUILD")
 end
 
 -- Receive live distribution addition / removal
@@ -503,9 +529,14 @@ function LA:ReceiveLiveSync(prefix, msg, channel, sender)
     end
 
     if state == "ADD" then
-        tinsert(self.db.factionrealm.history[self.currentGuild].loots, loot)
-        -- We can assume this loot timestamp is the most recent, keep it as is
-        self.db.factionrealm.history[self.currentGuild].timestamp = loot["date"]
+        self:GetItemMixin(loot["id"], function(itemMixin)
+            loot["name"] = strlower(itemMixin:GetItemName())
+            tinsert(self.db.factionrealm.history[self.currentGuild].loots, loot)
+            -- We can assume this loot timestamp is the most recent, keep it as is
+            self.db.factionrealm.history[self.currentGuild].timestamp = loot["date"]
+        end)
+    else
+        self:Print("DEBUG:Unrecognized live sync command state")
     end
 
     if self:IsGUIVisible() then
