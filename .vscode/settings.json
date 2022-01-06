@@ -45,7 +45,13 @@
     "StaticPopupDialogs",
     "StaticPopup_Show",
     "OKAY",
-    "UnitName"
+    "UnitName",
+    "IsControlKeyDown",
+    "DressUpItemLink",
+    "IsShiftKeyDown",
+    "ChatFrame1EditBox",
+    "SetItemRef",
+    "GameTooltip"
   ],
   "Lua.runtime.version": "Lua 5.1"
 }

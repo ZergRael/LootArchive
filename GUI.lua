@@ -126,14 +126,14 @@ function LA:RedrawRows()
 
             self:GetItemMixin(row["id"], function(itemMixin)
                 button.Icon:SetTexture(itemMixin:GetItemIcon())
-                button.Item:SetText(itemMixin:GetItemLink())
-                button.IconAndItem:EnableMouse(true)
-                button.IconAndItem:SetScript("OnEnter", function()
+                button.ItemHTML:SetText(itemMixin:GetItemLink())
+                button.ItemHTML:SetScript("OnHyperlinkEnter", function()
                     GameTooltip:SetOwner(button.IconAndItem, "ANCHOR_TOP")
                     GameTooltip:SetHyperlink(itemMixin:GetItemLink())
                     GameTooltip:Show()
                 end)
-                button.IconAndItem:SetScript("OnLeave", function() self:HideTooltip() end)
+                button.ItemHTML:SetScript("OnHyperlinkLeave", function() self:HideTooltip() end)
+                button.ItemHTML:SetScript("OnHyperlinkClick", function() self:HandleItemClick(itemMixin) end)
             end)
             button.PlayerName:SetText(row["player"])
             button.Reason:SetText(row["reason"])
@@ -222,4 +222,16 @@ end
 
 function LA:HideTooltip()
     GameTooltip:Hide()
+end
+
+function LA:HandleItemClick(itemMixin)
+    if IsControlKeyDown() then
+        DressUpItemLink(itemMixin:GetItemLink())
+    elseif IsShiftKeyDown() then
+        if ChatFrame1EditBox:IsVisible() then
+            ChatFrame1EditBox:Insert(itemMixin:GetItemLink())
+        end
+    else
+        SetItemRef(itemMixin:GetItemLink())
+    end
 end

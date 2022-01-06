@@ -55,6 +55,13 @@
                     <Anchor point="LEFT" x="4" y="0"/>
                 </Anchors>
             </Frame>
+            <SimpleHTML parentKey="ItemHTML">
+                <Size x="180" y="12"/>
+                <Anchors>
+                    <Anchor point="LEFT" x="30" y="0"/>
+                </Anchors>
+                <FontString inherits="GameFontHighlightSmall" justifyH="LEFT"/>
+            </SimpleHTML>
         </Frames>
     </Frame>
 
