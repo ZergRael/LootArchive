@@ -129,9 +129,9 @@ function LA:RedrawRows()
                 button.Item:SetText(itemMixin:GetItemLink())
                 button.IconAndItem:EnableMouse(true)
                 button.IconAndItem:SetScript("OnEnter", function()
-                    AceGUI.tooltip:SetOwner(button.IconAndItem, "ANCHOR_TOP")
-                    AceGUI.tooltip:SetHyperlink(itemMixin:GetItemLink())
-                    AceGUI.tooltip:Show()
+                    GameTooltip:SetOwner(button.IconAndItem, "ANCHOR_TOP")
+                    GameTooltip:SetHyperlink(itemMixin:GetItemLink())
+                    GameTooltip:Show()
                 end)
                 button.IconAndItem:SetScript("OnLeave", function() self:HideTooltip() end)
             end)
@@ -212,14 +212,14 @@ function LA:HumanDuration(miliseconds)
 end
 
 function LA:ShowTooltip(owner, lines)
-    AceGUI.tooltip:SetOwner(owner.frame, "ANCHOR_TOP")
-    AceGUI.tooltip:ClearLines()
-    for i, line in ipairs(lines) do
-        AceGUI.tooltip:AddLine(line)
+    GameTooltip:SetOwner(owner.frame, "ANCHOR_TOP")
+    GameTooltip:ClearLines()
+    for _, line in ipairs(lines) do
+        GameTooltip:AddLine(line)
     end
-    AceGUI.tooltip:Show()
+    GameTooltip:Show()
 end
 
 function LA:HideTooltip()
-    AceGUI.tooltip:Hide()
+    GameTooltip:Hide()
 end
