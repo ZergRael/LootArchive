@@ -4,7 +4,7 @@
 
 I got tired of copy-pasting every item on every raid in a spreadsheet, and usual raid loot addons are not convenient for the simple loot history I need.
 
-_This addon is currently in alpha state, expect issues you may want to [report](https://github.com/ZergRael/LootArchive/issues)._
+_This addon is currently in beta state, expect issues you may want to [report](https://github.com/ZergRael/LootArchive/issues) !_
 
 Responds to console with **/la** and a minimap button.
 
@@ -48,7 +48,6 @@ Responds to console with **/la** and a minimap button.
 ## Known issues
 
 - May not handle LootMaster distribution properly, this needs to be tested
-- A crapload of debug messages, it's an alpha, sorry
 
 ## Contribution
 
