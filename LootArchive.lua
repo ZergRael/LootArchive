@@ -191,7 +191,7 @@ function LA:GiveFromConsole(itemIdOrLinkOrPlayerName, exact)
     end
 
     -- At this point we're sure the next arg must be playerName
-    local name = strmatch(itemIdOrLinkOrPlayerName, "^(%a+)")
+    local name = strmatch(itemIdOrLinkOrPlayerName, "^([^%s]+)")
     if not name then
         self:Print(L["No player found"])
         return
