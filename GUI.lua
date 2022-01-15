@@ -3,31 +3,31 @@ local addonTitle = select(2, GetAddOnInfo(addonName))
 local LA = LibStub("AceAddon-3.0"):GetAddon(addonName)
 local L = LibStub("AceLocale-3.0"):GetLocale(addonName, true)
 local AceGUI = LibStub("AceGUI-3.0")
-local f, scrollFrame, rows
+local mainFrame, scrollFrame, rows, editMode, editItem, editFrame, editPlayer, editReason, editDate
 
 function LA:CreateGUI()
-    f = AceGUI:Create("Frame")
-    f:Hide()
-    f:EnableResize(false)
+    mainFrame = AceGUI:Create("Frame")
+    mainFrame:Hide()
+    mainFrame:EnableResize(false)
 
-    f:SetCallback("OnClose", function(widget)
+    mainFrame:SetCallback("OnClose", function(widget)
         -- AceGUI:Release(widget)
         -- Cancel filter on close
         self:SetFilter()
         -- TODO: maybe also cancel sort ?
     end)
-    f:SetTitle(addonTitle)
+    mainFrame:SetTitle(addonTitle)
     local frameName = addonName .."_MainFrame"
-	_G[frameName] = f
+	_G[frameName] = mainFrame
 	table.insert(UISpecialFrames, frameName) -- Allow ESC close
-    -- f:SetStatusText("Status Bar")
-    f:SetLayout("Flow")
+    -- mainFrame:SetStatusText("Status Bar")
+    mainFrame:SetLayout("Flow")
     
     -- SEARCH HEADER
     local searchHeader = AceGUI:Create("SimpleGroup")
 	searchHeader:SetFullWidth(true)
 	searchHeader:SetLayout("Flow")
-    f:AddChild(searchHeader)
+    mainFrame:AddChild(searchHeader)
 
     local searchBox = AceGUI:Create("EditBox")
     searchBox:SetLabel(L["Search for item or player"])
@@ -38,6 +38,17 @@ function LA:CreateGUI()
     searchHeader:AddChild(searchBox)
 
     -- BUTTONS
+    local addButton = AceGUI:Create("Button")
+	addButton:SetCallback("OnClick", function() LA:ShowCreateRowFrame() end)
+	addButton:SetHeight(20)
+	addButton:SetWidth(100)
+	addButton:SetText(L["Add loot"])
+    searchHeader:AddChild(addButton)
+
+    local margin = AceGUI:Create("Label")
+    margin:SetWidth(4)
+    searchHeader:AddChild(margin)
+
     local exportButton = AceGUI:Create("Button")
 	exportButton:SetCallback("OnClick", function() LA:ExportDatabase() end)
 	exportButton:SetHeight(20)
@@ -45,13 +56,21 @@ function LA:CreateGUI()
 	exportButton:SetText(L["Export"])
     searchHeader:AddChild(exportButton)
 
+    margin = AceGUI:Create("Label")
+    margin:SetWidth(12)
+    searchHeader:AddChild(margin)
+
+    local info = AceGUI:Create("Label")
+    info:SetText(L["Double click to modify rows (+ Ctrl to delete)"])
+    searchHeader:AddChild(info)
+
     -- TABLE HEADER
     local tableHeader = AceGUI:Create("SimpleGroup")
     tableHeader:SetFullWidth(true)
     tableHeader:SetLayout("Flow")
-    f:AddChild(tableHeader)
+    mainFrame:AddChild(tableHeader)
 
-    local margin = AceGUI:Create("Label")
+    margin = AceGUI:Create("Label")
     margin:SetWidth(4)
     tableHeader:AddChild(margin)
 
@@ -81,7 +100,7 @@ function LA:CreateGUI()
     tableHeader:AddChild(margin)
 
     btn = AceGUI:Create("InteractiveLabel")
-    btn:SetWidth(170)
+    btn:SetWidth(180)
     btn:SetText(string.format(" %s ", L["Reason"]))
     btn:SetJustifyH("LEFT")
     btn.highlight:SetColorTexture(0.3, 0.3, 0.3, 0.5)
@@ -105,10 +124,10 @@ function LA:CreateGUI()
     scrollContainer:SetFullWidth(true)
     scrollContainer:SetFullHeight(true)
     scrollContainer:SetLayout("Fill")
-    f:AddChild(scrollContainer)
+    mainFrame:AddChild(scrollContainer)
 
-	scrollFrame = CreateFrame("ScrollFrame", nil, scrollContainer.frame, "_HybridScrollFrame")
-	HybridScrollFrame_CreateButtons(scrollFrame, "_HybridScrollListItemTemplate")
+	scrollFrame = CreateFrame("ScrollFrame", nil, scrollContainer.frame, "HybridScrollFrame")
+	HybridScrollFrame_CreateButtons(scrollFrame, "HybridScrollListItemTemplate")
 	scrollFrame.update = function() LA:RedrawRows() end
 end
 
@@ -123,6 +142,13 @@ function LA:RedrawRows()
 
         if (itemIndex <= #rows) then
             button:SetID(itemIndex)
+            button:SetScript("OnDoubleClick", function()
+                if IsControlKeyDown() then
+                    self:ConfirmDeleteRow(row)
+                else
+                    self:ShowEditRowFrame(row)
+                end
+            end)
 
             self:GetItemMixin(row["id"], function(itemMixin)
                 button.Icon:SetTexture(itemMixin:GetItemIcon())
@@ -155,25 +181,25 @@ end
 
 function LA:UpdateRows()
     rows = self:GenerateRows()
-    f:SetStatusText(string.format(L["%d records"], #rows))
+    mainFrame:SetStatusText(string.format(L["%d records"], #rows))
 end
 
 function LA:ShowGUI()
-    if not f then
+    if not mainFrame then
         self:CreateGUI()
     end
 
-    f:Show()
+    mainFrame:Show()
     self:UpdateRows()
     self:RedrawRows()
 end
 
 function LA:IsGUIVisible()
-    return f and f:IsShown()
+    return mainFrame and mainFrame:IsShown()
 end
 
 function LA:HideGUI()
-    f:Hide()
+    mainFrame:Hide()
 end
 
 function LA:ToggleGUI()
@@ -234,4 +260,126 @@ function LA:HandleItemClick(itemMixin)
     else
         SetItemRef(itemMixin:GetItemLink())
     end
+end
+
+function LA:CreateEditRowFrame()
+    editFrame = AceGUI:Create("Frame")
+    editFrame:Hide()
+    editFrame:EnableResize(false)
+    editFrame:SetHeight(260)
+    editFrame:SetWidth(320)
+
+    local frameName = addonName .."_EditFrame"
+	_G[frameName] = editFrame
+	table.insert(UISpecialFrames, frameName) -- Allow ESC close
+    editFrame:SetLayout("Flow")
+
+    editItem = AceGUI:Create("EditBox")
+    editItem:SetLabel(L["Item"])
+    editItem:SetWidth(300)
+    editItem:SetCallback("OnEnterPressed", function(widget, event, text)
+        if (GetItemInfoInstant(text)) then
+            self:EditOrSaveRow()
+            return false
+        else
+            return true
+        end
+    end)
+    editFrame:AddChild(editItem)
+
+    editPlayer = AceGUI:Create("EditBox")
+    editPlayer:SetLabel(L["Player"])
+    editPlayer:SetWidth(300)
+    editPlayer:SetCallback("OnEnterPressed", function(widget, event, text)
+        if IsInRaid() or IsInGroup() then
+            local name = self:GuessPlayerName(text)
+            if name then
+                widget:SetText(name)
+            end
+        end
+        self:EditOrSaveRow()
+    end)
+    editFrame:AddChild(editPlayer)
+
+    editReason = AceGUI:Create("EditBox")
+    editReason:SetLabel(L["Reason"])
+    editReason:SetWidth(300)
+    editReason:SetCallback("OnEnterPressed", function() self:EditOrSaveRow() end)
+    editFrame:AddChild(editReason)
+
+    editDate = AceGUI:Create("EditBox")
+    editDate:SetLabel(L["Date"])
+    editDate:SetWidth(300)
+    editDate:SetDisabled(true)
+    editFrame:AddChild(editDate)
+end
+
+function LA:ShowEditRowFrame(row)
+    if not editFrame then
+        self:CreateEditRowFrame()
+    end
+
+    editMode = row
+    editFrame:SetTitle(L["Edit loot"])
+    self:GetItemMixin(row["id"], function(itemMixin)
+        editItem:SetText(itemMixin:GetItemLink())
+        editItem:SetDisabled(true)
+        editPlayer:SetText(row["player"])
+        editReason:SetText(row["reason"])
+        editDate:SetText(date(L["%F %T"], row["date"]))
+        editFrame:Show()
+    end)
+end
+
+function LA:ShowCreateRowFrame()
+    if not editFrame then
+        self:CreateEditRowFrame()
+    end
+
+    editMode = false
+    editFrame:SetTitle(L["Add loot"])
+    editItem:SetText("")
+    editItem:SetDisabled(false)
+    editPlayer:SetText("")
+    editReason:SetText("")
+    editDate:SetText()
+    editFrame:Show()
+end
+
+function LA:EditOrSaveRow()
+    if editItem:GetText() == "" or editPlayer:GetText() == "" then
+        return
+    end
+
+    self:GetItemMixin(editItem:GetText(), function(itemMixin)
+        if editMode then
+            self:UpdateLootAwarded(itemMixin, editPlayer:GetText(), editReason:GetText(), editMode["date"])
+        else
+            local row = self:StoreLootAwarded(itemMixin, editPlayer:GetText(), editReason:GetText())
+            if row then
+                self:ShowEditRowFrame(row)
+            else
+                editFrame:Hide()
+            end
+        end
+    end)
+end
+
+function LA:ConfirmDeleteRow(row)
+    StaticPopupDialogs[addonName.."_DeleteConfirm"] = {
+        text = L["Are you sure you want to delete this row ?"],
+        button1 = YES,
+        button2 = NO,
+        timeout = 0,
+        OnAccept = function()
+            self:GetItemMixin(row["id"], function(itemMixin)
+                self:DeleteLootAwarded(itemMixin, row["player"], row["reason"], row["date"])
+            end)
+        end,
+        whileDead = true,
+        hideOnEscape = true,
+        preferredIndex = 3,
+    }
+
+    StaticPopup_Show(addonName.."_DeleteConfirm")
 end

@@ -51,7 +51,9 @@
     "IsShiftKeyDown",
     "ChatFrame1EditBox",
     "SetItemRef",
-    "GameTooltip"
+    "GameTooltip",
+    "YES",
+    "NO"
   ],
   "Lua.runtime.version": "Lua 5.1"
 }

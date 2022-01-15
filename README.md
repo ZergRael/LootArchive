@@ -25,6 +25,7 @@ Responds to console with **/la** and a minimap button.
 
 - CSV / Excel export
 - Live database synchronization on loot distribution
+- Editable rows for typo fixes or late redistribution
 
 ## Commands
 
@@ -42,7 +43,6 @@ Responds to console with **/la** and a minimap button.
 ## Todo
 
 - One way database synchronization based on guild ranks to disallow spoofing
-- Editable rows for typo fixes or late redistribution
 - Anything you would like ? Please create an [issue on Github](https://github.com/ZergRael/LootArchive/issues)
 
 ## Known issues

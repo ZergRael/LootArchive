@@ -48,7 +48,7 @@ L["Database reset"] = "Database reset"
 L["Manual sync"] = "Manual sync"
 L["Ask guild members for manual database sync"] = "Ask guild members for manual database sync"
 
--- GUI
+-- MainFrame
 L["Item"] = "Item"
 L["Player"] = "Player"
 L["Reason"] = "Reason"
@@ -56,6 +56,14 @@ L["Date"] = "Date"
 L["Search for item or player"] = "Search for item or player"
 L["%d records"] = "%d records"
 L["Export"] = "Export"
+L["Double click to modify rows (+ Ctrl to delete)"] = "Double click to modify rows (+ Ctrl to delete)"
+
+-- EditFrame
+L["Edit loot"] = "Edit loot"
+L["Add loot"] = "Add loot"
+L["Save"] = "Save"
+L["Unknown item"] = "Unknown item"
+L["Are you sure you want to delete this row ?"] = "Are you sure you want to delete this row ?"
 
 -- Time
 L["%is"] = "%is"

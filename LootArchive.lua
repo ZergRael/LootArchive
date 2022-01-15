@@ -348,7 +348,71 @@ function LA:StoreLootAwarded(itemMixin, playerName, reason)
         self:RedrawRows()
     end
 
-    return true
+    return loot
+end
+
+-- Update distributed item in database
+function LA:UpdateLootAwarded(itemMixin, playerName, reason, date)
+    local now = time()
+    local loot = {
+        id = itemMixin:GetItemID(),
+        item = strlower(itemMixin:GetItemName()), -- It's fine to store this as we remove it from sync
+        player = playerName,
+        reason = reason,
+        date = date
+    }
+
+    if not self:CreateDatabaseIfNecessary() then
+        return false
+    end
+
+    for i, row in ipairs(self.db.factionrealm.history[self.currentGuild].loots) do
+        if row["date"] == date then
+            self.db.factionrealm.history[self.currentGuild].loots[i] = loot
+        end
+    end
+
+    self.db.factionrealm.history[self.currentGuild].timestamp = now
+    self:LiveSync(loot, "EDIT")
+
+    if self:IsGUIVisible() then
+        self:UpdateRows()
+        self:RedrawRows()
+    end
+
+    return loot
+end
+
+-- Delete distributed item in database
+function LA:DeleteLootAwarded(itemMixin, playerName, reason, date)
+    local now = time()
+    local loot = {
+        id = itemMixin:GetItemID(),
+        item = strlower(itemMixin:GetItemName()), -- It's fine to store this as we remove it from sync
+        player = playerName,
+        reason = reason,
+        date = date
+    }
+
+    if not self:CreateDatabaseIfNecessary() then
+        return false
+    end
+
+    for i, row in ipairs(self.db.factionrealm.history[self.currentGuild].loots) do
+        if row["date"] == date then
+            table.remove(self.db.factionrealm.history[self.currentGuild].loots, i)
+        end
+    end
+
+    self.db.factionrealm.history[self.currentGuild].timestamp = now
+    self:LiveSync(loot, "DELETE")
+
+    if self:IsGUIVisible() then
+        self:UpdateRows()
+        self:RedrawRows()
+    end
+
+    return loot
 end
 
 -- Store current guild name & player rank
@@ -535,6 +599,32 @@ function LA:ReceiveLiveSync(prefix, msg, channel, sender)
             -- We can assume this loot timestamp is the most recent, keep it as is
             self.db.factionrealm.history[self.currentGuild].timestamp = loot["date"]
         end)
+    elseif state == "EDIT" then
+        self:GetItemMixin(loot["id"], function(itemMixin)
+            local found = false
+            loot["name"] = strlower(itemMixin:GetItemName())
+            for i, row in ipairs(self.db.factionrealm.history[self.currentGuild].loots) do
+                if row["date"] == loot["date"] then
+                    found = true
+                    self.db.factionrealm.history[self.currentGuild].loots[i] = loot
+                end
+            end
+            -- TODO: If not found, add it ?
+            if found then
+                self.db.factionrealm.history[self.currentGuild].timestamp = time()
+            end
+        end)
+    elseif date == "DELETE" then
+        local found = false
+        for i, row in ipairs(self.db.factionrealm.history[self.currentGuild].loots) do
+            if row["date"] == loot["date"] then
+                found = true
+                table.remove(self.db.factionrealm.history[self.currentGuild].loots, i)
+            end
+        end
+        if found then
+            self.db.factionrealm.history[self.currentGuild].timestamp = time()
+        end
     else
         self:Print("DEBUG:Unrecognized live sync command state")
     end
@@ -685,7 +775,7 @@ function LA:ExportDatabase()
         str = str..strjoin(",", v["id"], v["item"], v["player"], v["reason"], date("%F %T", v["date"])).."\r\n"
     end
 
-    StaticPopupDialogs[addonName.."_Popup"] = {
+    StaticPopupDialogs[addonName.."_Export"] = {
         text = "Copy and paste this as a CSV file.",
         button1 = OKAY,
         hasEditBox = true,
@@ -699,5 +789,5 @@ function LA:ExportDatabase()
         preferredIndex = 3,
     }
 
-    StaticPopup_Show(addonName.."_Popup")
+    StaticPopup_Show(addonName.."_Export")
 end
