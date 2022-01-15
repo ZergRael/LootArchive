@@ -343,6 +343,8 @@ function LA:StoreLootAwarded(itemMixin, playerName, reason)
     self.db.factionrealm.history[self.currentGuild].timestamp = now
     self:LiveSync(loot, "ADD")
 
+    self:OptimizeDatabase()
+
     if self:IsGUIVisible() then
         self:UpdateRows()
         self:RedrawRows()
@@ -375,6 +377,8 @@ function LA:UpdateLootAwarded(itemMixin, playerName, reason, date)
     self.db.factionrealm.history[self.currentGuild].timestamp = now
     self:LiveSync(loot, "EDIT")
 
+    self:OptimizeDatabase()
+
     if self:IsGUIVisible() then
         self:UpdateRows()
         self:RedrawRows()
@@ -406,6 +410,8 @@ function LA:DeleteLootAwarded(itemMixin, playerName, reason, date)
 
     self.db.factionrealm.history[self.currentGuild].timestamp = now
     self:LiveSync(loot, "DELETE")
+
+    self:OptimizeDatabase()
 
     if self:IsGUIVisible() then
         self:UpdateRows()
@@ -628,6 +634,8 @@ function LA:ReceiveLiveSync(prefix, msg, channel, sender)
     else
         self:Print("DEBUG:Unrecognized live sync command state")
     end
+
+    self:OptimizeDatabase()
 
     if self:IsGUIVisible() then
         self:UpdateRows()
