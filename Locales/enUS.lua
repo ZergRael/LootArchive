@@ -37,6 +37,8 @@ L["Raid loot announce pattern"] = "Raid loot announce pattern"
 L["Raid loot distribution pattern"] = "Raid loot distribution pattern"
 L["Cannot live sync database now, please try a manual sync later"] = "Cannot live sync database now, please try a manual sync later"
 L["Cannot store award in database right now, please reload and try again"] = "Cannot store award in database right now, please reload and try again"
+L["Failed to match playername : %s"] = "Failed to match playername : %s"
+L["Not in raid/group, cannot announce"] = "Not in raid/group, cannot announce"
 
 -- Database
 L["Maximum records in history"] = "Maximum records in history"

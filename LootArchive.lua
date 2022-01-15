@@ -92,7 +92,7 @@ end
 function LA:GiveMasterLoot(slotId, candidateId, ...)
     local candidate = tostring(GetMasterLootCandidate(candidateId))
     local itemLink = tostring(GetLootSlotLink(slotId))
-    self:Print("DEBUG:GiveMasterLoot", itemLink, candidate)
+    -- self:Print("DEBUG:GiveMasterLoot", itemLink, candidate)
 
     self:GetItemMixin(itemLink, function(itemMixin)
         if not self:Award(itemMixin, candidate) then
@@ -291,7 +291,7 @@ function LA:GuessPlayerName(playerName)
         end
     end
 
-    self:Print("Failed to match", playerName)
+    self:Print(string.format(L["Failed to match playername : %s"], playerName))
     return nil
 end
 
@@ -320,7 +320,7 @@ function LA:Announce(str)
             SendChatMessage(str, "PARTY")
         end
     else
-        self:Print("Not in raid/group, cannot announce", str)
+        self:Print(L["Not in raid/group, cannot announce"], str)
     end
 end
 
@@ -632,7 +632,7 @@ function LA:ReceiveLiveSync(prefix, msg, channel, sender)
             self.db.factionrealm.history[self.currentGuild].timestamp = time()
         end
     else
-        self:Print("DEBUG:Unrecognized live sync command state")
+        -- self:Print("DEBUG:Unrecognized live sync command state")
     end
 
     self:OptimizeDatabase()
