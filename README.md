@@ -47,8 +47,6 @@ Responds to console with **/la** and a minimap button.
 
 ## Known issues
 
-- May not handle LootMaster distribution properly, this needs to be tested
-
 ## Contribution
 
 You can help this project by adding [translations](https://www.curseforge.com/wow/addons/lootarchive/localization) and [reporting issues](https://github.com/ZergRael/LootArchive/issues).
