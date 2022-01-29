@@ -67,5 +67,7 @@ function LA:PrintArray(arr)
 end
 
 function LA:StrRemove(s, el)
-    return strtrim(strtrim(gsub(s, gsub(gsub(el, "%[", "%%[", 1), "%]", "%%]", 1), "", 1)))
+    local escapedEl = gsub(gsub(gsub(el, "%[", "%%[", 1), "%]", "%%]", 1), "%-", "%%-")
+    local removedString = gsub(s, escapedEl, "", 1)
+    return strtrim(strtrim(removedString))
 end
