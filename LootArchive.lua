@@ -90,7 +90,7 @@ end
 
 -- Hook on ML distribution to ease recording
 function LA:GiveMasterLoot(slotId, candidateId, ...)
-    local candidate = tostring(GetMasterLootCandidate(candidateId))
+    local candidate = tostring(GetMasterLootCandidate(slotId, candidateId))
     local itemLink = tostring(GetLootSlotLink(slotId))
     -- self:Print("DEBUG:GiveMasterLoot", itemLink, candidate)
 
