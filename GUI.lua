@@ -376,3 +376,39 @@ function LA:ConfirmDeleteRow(row)
 
     StaticPopup_Show(addonName.."_DeleteConfirm")
 end
+
+-- Export database as CSV
+function LA:ExportDatabase()
+    if not self.currentGuild then
+        self:Print(L["Error: missing current guild info, please /reload and try again"])
+        return
+    end
+
+    local str = "ID,Item,Player,Reason,Date\r\n"
+    for _,v in ipairs(self.db.factionrealm.history[self.currentGuild].loots) do
+        str = str..strjoin(",", v["id"], v["item"], v["player"], v["reason"] or "", date("%F %T", v["date"])).."\r\n"
+    end
+
+    local exportFrame = AceGUI:Create("Frame")
+    exportFrame:Hide()
+    exportFrame:SetTitle(L["Export"])
+    exportFrame:EnableResize(false)
+    exportFrame:SetHeight(320)
+    exportFrame:SetWidth(540)
+
+    local frameName = addonName .."_ExportFrame"
+	_G[frameName] = exportFrame
+	table.insert(UISpecialFrames, frameName) -- Allow ESC close
+
+    local editExport = AceGUI:Create("MultiLineEditBox")
+    editExport:SetLabel(L["Copy and paste this as a CSV file"])
+    editExport:SetWidth(500)
+    editExport:DisableButton(true)
+    editExport:SetNumLines(16)
+    editExport:SetText(str)
+    editExport:SetFocus()
+    editExport:HighlightText()
+    exportFrame:AddChild(editExport)
+
+    exportFrame:Show()
+end

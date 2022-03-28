@@ -781,32 +781,3 @@ function LA:CleanupDatabase()
         end
     end
 end
-
--- Export database as CSV
-function LA:ExportDatabase()
-    if not self.currentGuild then
-        self:Print(L["Error: missing current guild info, please /reload and try again"])
-        return
-    end
-
-    local str = "ID,Item,Player,Reason,Date\r\n"
-    for _,v in ipairs(self.db.factionrealm.history[self.currentGuild].loots) do
-        str = str..strjoin(",", v["id"], v["item"], v["player"], v["reason"] or "", date("%F %T", v["date"])).."\r\n"
-    end
-
-    StaticPopupDialogs[addonName.."_Export"] = {
-        text = "Copy and paste this as a CSV file.",
-        button1 = OKAY,
-        hasEditBox = true,
-        OnShow = function (self)
-            self.editBox:SetText(str)
-            self.editBox:HighlightText()
-        end,
-        timeout = 0,
-        whileDead = true,
-        hideOnEscape = true,
-        preferredIndex = 3,
-    }
-
-    StaticPopup_Show(addonName.."_Export")
-end

@@ -19,6 +19,7 @@ L["Cannot live sync database now, please try a manual sync later"] = "Impossible
 L["Cannot store award in database right now, please reload and try again"] = "Impossible de stocker cette distribution maintenant, veuillez recharger et essayer à nouveau"
 L["Cannot use give command without playername"] = "Impossible d'utiliser la commande \"give\" sans nom de joueur"
 L["Channel used to send distribution announces"] = "Canal utilisé pour les annonces de distribution"
+L["Copy and paste this as a CSV file"] = "Copiez/coller le texte ci-dessous en tant que fichier CSV"
 L["Database reset"] = "Base de données vidée"
 L["Database Settings"] = "Paramètres de la base de données"
 L["Date"] = true

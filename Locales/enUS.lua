@@ -68,6 +68,9 @@ L["Save"] = "Save"
 L["Unknown item"] = "Unknown item"
 L["Are you sure you want to delete this row ?"] = "Are you sure you want to delete this row ?"
 
+-- ExportFrame
+L["Copy and paste this as a CSV file"] = "Copy and paste this as a CSV file"
+
 -- Time
 L["%is"] = "%is"
 L["%im %is"] = "%im %is"
