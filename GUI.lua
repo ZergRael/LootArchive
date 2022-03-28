@@ -3,7 +3,7 @@ local addonTitle = select(2, GetAddOnInfo(addonName))
 local LA = LibStub("AceAddon-3.0"):GetAddon(addonName)
 local L = LibStub("AceLocale-3.0"):GetLocale(addonName, true)
 local AceGUI = LibStub("AceGUI-3.0")
-local mainFrame, scrollFrame, rows, editMode, editItem, editFrame, editPlayer, editReason, editDate
+local mainFrame, scrollFrame, rows, editMode, editItem, editFrame, editPlayer, editReason, editDate, searchBox
 
 function LA:CreateGUI()
     mainFrame = AceGUI:Create("Frame")
@@ -14,6 +14,7 @@ function LA:CreateGUI()
         -- AceGUI:Release(widget)
         -- Cancel filter on close
         self:SetFilter()
+        searchBox:SetText("")
         -- TODO: maybe also cancel sort ?
     end)
     mainFrame:SetTitle(addonTitle)
@@ -30,7 +31,7 @@ function LA:CreateGUI()
     mainFrame:AddChild(searchHeader)
 
     -- Search box
-    local searchBox = AceGUI:Create("EditBox")
+    searchBox = AceGUI:Create("EditBox")
     searchBox:SetLabel(L["Search for item or player"])
     searchBox:SetFullWidth(true)
     searchBox:SetCallback("OnEnterPressed", function(widget, event, text)
