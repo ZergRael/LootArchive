@@ -64,6 +64,7 @@ function LA:CreateGUI()
 
     local info = AceGUI:Create("Label")
     info:SetText(L["Double click to modify rows (+ Ctrl to delete)"])
+    info:SetWidth(300)
     searchHeader:AddChild(info)
 
     -- TABLE HEADER
