@@ -779,8 +779,8 @@ function LA:ExportDatabase()
     end
 
     local str = "ID,Item,Player,Reason,Date\r\n"
-    for i,v in ipairs(self.db.factionrealm.history[self.currentGuild].loots) do
-        str = str..strjoin(",", v["id"], v["item"], v["player"], v["reason"], date("%F %T", v["date"])).."\r\n"
+    for _,v in ipairs(self.db.factionrealm.history[self.currentGuild].loots) do
+        str = str..strjoin(",", v["id"], v["item"], v["player"], v["reason"] or "", date("%F %T", v["date"])).."\r\n"
     end
 
     StaticPopupDialogs[addonName.."_Export"] = {
