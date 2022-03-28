@@ -22,13 +22,14 @@ function LA:CreateGUI()
 	table.insert(UISpecialFrames, frameName) -- Allow ESC close
     -- mainFrame:SetStatusText("Status Bar")
     mainFrame:SetLayout("Flow")
-    
+
     -- SEARCH HEADER
     local searchHeader = AceGUI:Create("SimpleGroup")
 	searchHeader:SetFullWidth(true)
 	searchHeader:SetLayout("Flow")
     mainFrame:AddChild(searchHeader)
 
+    -- Search box
     local searchBox = AceGUI:Create("EditBox")
     searchBox:SetLabel(L["Search for item or player"])
     searchBox:SetFullWidth(true)
@@ -49,6 +50,7 @@ function LA:CreateGUI()
     margin:SetWidth(4)
     searchHeader:AddChild(margin)
 
+    -- Export button
     local exportButton = AceGUI:Create("Button")
 	exportButton:SetCallback("OnClick", function() LA:ExportDatabase() end)
 	exportButton:SetHeight(20)
@@ -74,6 +76,7 @@ function LA:CreateGUI()
     margin:SetWidth(4)
     tableHeader:AddChild(margin)
 
+    -- Item header
     local btn
     btn = AceGUI:Create("InteractiveLabel")
     btn:SetWidth(195)
@@ -87,6 +90,7 @@ function LA:CreateGUI()
     margin:SetWidth(4)
     tableHeader:AddChild(margin)
 
+    -- Player header
     btn = AceGUI:Create("InteractiveLabel")
     btn:SetWidth(110)
     btn:SetText(string.format(" %s ", L["Player"]))
@@ -99,6 +103,7 @@ function LA:CreateGUI()
     margin:SetWidth(4)
     tableHeader:AddChild(margin)
 
+    -- Reason header
     btn = AceGUI:Create("InteractiveLabel")
     btn:SetWidth(180)
     btn:SetText(string.format(" %s ", L["Reason"]))
@@ -111,6 +116,7 @@ function LA:CreateGUI()
     margin:SetWidth(4)
     tableHeader:AddChild(margin)
 
+    -- Date header
     btn = AceGUI:Create("InteractiveLabel")
     btn:SetWidth(140)
     btn:SetText(string.format(" %s ", L["Date"]))
@@ -119,7 +125,7 @@ function LA:CreateGUI()
     btn:SetCallback("OnClick", function() LA:SortRows("date") end)
     tableHeader:AddChild(btn)
 
-    -- TABLE
+    -- TABLE CONTENTS
     local scrollContainer = AceGUI:Create("SimpleGroup")
     scrollContainer:SetFullWidth(true)
     scrollContainer:SetFullHeight(true)
@@ -131,6 +137,7 @@ function LA:CreateGUI()
 	scrollFrame.update = function() LA:RedrawRows() end
 end
 
+-- Update GUI with rows contents
 function LA:RedrawRows()
 	local buttons = HybridScrollFrame_GetButtons(scrollFrame)
     local offset = HybridScrollFrame_GetOffset(scrollFrame)
@@ -158,7 +165,7 @@ function LA:RedrawRows()
                     GameTooltip:SetHyperlink(itemMixin:GetItemLink())
                     GameTooltip:Show()
                 end)
-                button.ItemHTML:SetScript("OnHyperlinkLeave", function() self:HideTooltip() end)
+                button.ItemHTML:SetScript("OnHyperlinkLeave", function() GameTooltip:Hide() end)
                 button.ItemHTML:SetScript("OnHyperlinkClick", function() self:HandleItemClick(itemMixin) end)
             end)
             button.PlayerName:SetText(row["player"])
@@ -179,11 +186,13 @@ function LA:RedrawRows()
 	HybridScrollFrame_Update(scrollFrame, totalHeight, shownHeight)
 end
 
+-- Apply row filters and update status text
 function LA:UpdateRows()
     rows = self:GenerateRows()
     mainFrame:SetStatusText(string.format(L["%d records"], #rows))
 end
 
+-- Create GUI if necessary and draw rows
 function LA:ShowGUI()
     if not mainFrame then
         self:CreateGUI()
@@ -202,6 +211,7 @@ function LA:HideGUI()
     mainFrame:Hide()
 end
 
+-- Show/Hide GUI based on current visibility state
 function LA:ToggleGUI()
     if self:IsGUIVisible() then
         self:HideGUI()
@@ -210,6 +220,7 @@ function LA:ToggleGUI()
     end
 end
 
+-- Apply sort on rows and update GUI
 function LA:SortRows(column)
     scrollFrame:SetVerticalScroll(0)
     self:SetSort(column)
@@ -217,6 +228,7 @@ function LA:SortRows(column)
     self:RedrawRows()
 end
 
+-- Apply filter on rows and update GUI
 function LA:FilterRows(text)
     scrollFrame:SetVerticalScroll(0)
     self:SetFilter(text)
@@ -224,32 +236,7 @@ function LA:FilterRows(text)
     self:RedrawRows()
 end
 
-function LA:HumanDuration(miliseconds)
-    local seconds = math.floor(miliseconds / 1000)
-    if seconds < 60 then
-        return string.format(L["%is"], seconds)
-    end
-    local minutes = math.floor(seconds / 60)
-    if minutes < 60 then
-        return string.format(L["%im %is"], minutes, (seconds - minutes * 60))
-    end
-    local hours = math.floor(minutes / 60)
-    return string.format(L["%ih %im"], hours, (minutes - hours * 60))
-end
-
-function LA:ShowTooltip(owner, lines)
-    GameTooltip:SetOwner(owner.frame, "ANCHOR_TOP")
-    GameTooltip:ClearLines()
-    for _, line in ipairs(lines) do
-        GameTooltip:AddLine(line)
-    end
-    GameTooltip:Show()
-end
-
-function LA:HideTooltip()
-    GameTooltip:Hide()
-end
-
+-- Handler for mouse clicks on item rows
 function LA:HandleItemClick(itemMixin)
     if IsControlKeyDown() then
         DressUpItemLink(itemMixin:GetItemLink())
@@ -262,6 +249,7 @@ function LA:HandleItemClick(itemMixin)
     end
 end
 
+-- Generate a create/update row frame
 function LA:CreateEditRowFrame()
     editFrame = AceGUI:Create("Frame")
     editFrame:Hide()
@@ -314,6 +302,7 @@ function LA:CreateEditRowFrame()
     editFrame:AddChild(editDate)
 end
 
+-- Setup editFrame for edit mode and display it
 function LA:ShowEditRowFrame(row)
     if not editFrame then
         self:CreateEditRowFrame()
@@ -331,6 +320,7 @@ function LA:ShowEditRowFrame(row)
     end)
 end
 
+-- Setup editFrame for create mode and display it
 function LA:ShowCreateRowFrame()
     if not editFrame then
         self:CreateEditRowFrame()
@@ -346,6 +336,7 @@ function LA:ShowCreateRowFrame()
     editFrame:Show()
 end
 
+-- Apply changes from editFrame
 function LA:EditOrSaveRow()
     if editItem:GetText() == "" or editPlayer:GetText() == "" then
         return
@@ -365,6 +356,7 @@ function LA:EditOrSaveRow()
     end)
 end
 
+-- Row delete confirmation popup frame
 function LA:ConfirmDeleteRow(row)
     StaticPopupDialogs[addonName.."_DeleteConfirm"] = {
         text = L["Are you sure you want to delete this row ?"],

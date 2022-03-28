@@ -66,9 +66,9 @@ end
 -- EVENT HANDLERS
 -- This could be used to trigger something in raids
 -- probably useless but I like this event
-function LA:LOOT_OPENED(eventName)
-    -- self:Print("DEBUG:LOOT_OPENED")
-end
+-- function LA:LOOT_OPENED(eventName)
+--     self:Print("DEBUG:LOOT_OPENED")
+-- end
 
 -- Required to get player current guild after login
 function LA:PLAYER_GUILD_UPDATE(eventName, unitTarget)
@@ -79,14 +79,14 @@ function LA:PLAYER_GUILD_UPDATE(eventName, unitTarget)
 end
 
 -- This is spammy
-function LA:CHAT_MSG_LOOT(eventName)
-    -- self:Print("DEBUG:CHAT_MSG_LOOT")
-end
+-- function LA:CHAT_MSG_LOOT(eventName)
+--     self:Print("DEBUG:CHAT_MSG_LOOT")
+-- end
 
 -- Probably not needed
-function LA:OPEN_MASTER_LOOT_LIST(eventName)
-    -- self:Print("DEBUG:OPEN_MASTER_LOOT_LIST")
-end
+-- function LA:OPEN_MASTER_LOOT_LIST(eventName)
+--     self:Print("DEBUG:OPEN_MASTER_LOOT_LIST")
+-- end
 
 -- Hook on ML distribution to ease recording
 function LA:GiveMasterLoot(slotId, candidateId, ...)
