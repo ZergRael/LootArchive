@@ -727,7 +727,7 @@ function LA:SetFilter(text)
 end
 
 -- Generate filtered and sorted row for GUI
-function LA:GenerateRows(sortColumn, filter)
+function LA:GenerateRows()
     -- self:Print("Rebuilding data table")
     local tbl = {}
 
@@ -743,7 +743,7 @@ function LA:GenerateRows(sortColumn, filter)
     end
 
     for _, row in ipairs(self.db.factionrealm.history[self.currentGuild].loots) do
-        if not filter or strfind(row["item"], filter) or strfind(strlower(row["player"]), filter) then
+        if not filter or strfind(row["item"], filter) or strfind(strlower(row["player"]), filter) or strfind(self:StripAccents(row["player"]), filter) then
             table.insert(tbl, row)
         end
     end
