@@ -336,6 +336,7 @@ function LA:StoreLootAwarded(itemMixin, playerName, reason)
     }
 
     if not self:CreateDatabaseIfNecessary() then
+        self:Print(L["Error: missing current guild info, please /reload and try again"])
         return false
     end
 
@@ -365,6 +366,7 @@ function LA:UpdateLootAwarded(itemMixin, playerName, reason, date)
     }
 
     if not self:CreateDatabaseIfNecessary() then
+        self:Print(L["Error: missing current guild info, please /reload and try again"])
         return false
     end
 
@@ -399,6 +401,7 @@ function LA:DeleteLootAwarded(itemMixin, playerName, reason, date)
     }
 
     if not self:CreateDatabaseIfNecessary() then
+        self:Print(L["Error: missing current guild info, please /reload and try again"])
         return false
     end
 
@@ -441,6 +444,7 @@ end
 -- Send guild broadcast database sync request
 function LA:RequestDBSync()
     if not self.currentGuild then
+        self:Print(L["Error: missing current guild info, please /reload and try again"])
         return
     end
     -- self:Print("DEBUG:RequestDBSync")
@@ -544,6 +548,8 @@ function LA:ReceiveSyncDB(prefix, msg, channel, sender)
     local success, data = self:Deserialize(msg)
     if not success then
         -- self:Print("DEBUG:Failed to deserialize bulk data")
+        -- Silent discard
+        -- TODO: Add an error message ?
         return
     end
 
@@ -587,6 +593,7 @@ function LA:ReceiveLiveSync(prefix, msg, channel, sender)
     local success, loot = self:Deserialize(msg)
     if not success then
         -- self:Print("DEBUG:Failed to deserialize bulk data")
+        -- Silent discard is fine as we'll eventually get a bulk sync later
         return
     end
 
@@ -725,6 +732,8 @@ function LA:GenerateRows(sortColumn, filter)
     local tbl = {}
 
     if not self.db.factionrealm.history[self.currentGuild] then
+        -- Silent discard
+        -- TODO: Add an error message ?
         return tbl
     end
 
@@ -758,6 +767,7 @@ end
 -- Remove overflowing database records
 function LA:CleanupDatabase()
     if self.db.profile.maxHistory == 0 then
+        -- Silent discard
         return
     end
 
@@ -775,6 +785,7 @@ end
 -- Export database as CSV
 function LA:ExportDatabase()
     if not self.currentGuild then
+        self:Print(L["Error: missing current guild info, please /reload and try again"])
         return
     end
 
