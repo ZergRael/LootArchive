@@ -34,7 +34,6 @@
     "GetMasterLootCandidate",
     "GetLootSlotLink",
     "time",
-    "removemulti",
     "GetItemInfo",
     "GetAddOnMetadata",
     "Item",
