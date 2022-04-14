@@ -54,12 +54,12 @@ function LA:OnInitialize()
     self:Hook("GiveMasterLoot", true)
 
     -- Comms
-    self:RegisterComm(addonName.."_REQ", "ReceiveRequestSyncDB")
-    self:RegisterComm(addonName.."_BULK", "ReceiveSyncDB")
-    self:RegisterComm(addonName.."_LIVE", "ReceiveLiveSync")
+    self:RegisterComm(addonName .. "_REQ", "ReceiveRequestSyncDB")
+    self:RegisterComm(addonName .. "_BULK", "ReceiveSyncDB")
+    self:RegisterComm(addonName .. "_LIVE", "ReceiveLiveSync")
 
     -- GUI and options init
-	self:DrawMinimapIcon()
+    self:DrawMinimapIcon()
     self:RegisterOptionsTable()
 end
 
@@ -250,14 +250,14 @@ function LA:GuessPlayerName(playerName)
         for i = 1, MAX_RAID_MEMBERS do
             local name = GetRaidRosterInfo(i)
             if name ~= nil then
-                tinsert(roster, {name = name, slug = self:ToSlug(name), stripped = self:StripAccents(name)})
+                tinsert(roster, { name = name, slug = self:ToSlug(name), stripped = self:StripAccents(name) })
             end
         end
     elseif IsInGroup() then
         local group = GetHomePartyInfo()
         for _, name in ipairs(group) do
             if name ~= nil then
-                tinsert(roster, {name = name, slug = self:ToSlug(name), stripped = self:StripAccents(name)})
+                tinsert(roster, { name = name, slug = self:ToSlug(name), stripped = self:StripAccents(name) })
             end
         end
     else
@@ -453,8 +453,8 @@ function LA:RequestDBSync()
     if self.db.factionrealm.history[self.currentGuild] then
         timestamp = self.db.factionrealm.history[self.currentGuild].timestamp
     end
-    local msg = {state = "REQUEST", timestamp = timestamp}
-    self:SendCommMessage(addonName.."_REQ", self:Serialize(msg), "GUILD")
+    local msg = { state = "REQUEST", timestamp = timestamp }
+    self:SendCommMessage(addonName .. "_REQ", self:Serialize(msg), "GUILD")
 end
 
 -- Receive database sync request
@@ -468,7 +468,7 @@ function LA:ReceiveRequestSyncDB(prefix, msg, channel, sender)
     if channel == "GUILD" then
         -- This is a post-login _REQ, just answer with our own timestamp
         if self.db.factionrealm.history[self.currentGuild] and self.db.factionrealm.history[self.currentGuild].timestamp then
-            self:SendCommMessage(addonName.."_REQ", self:Serialize({state = "OFFER", timestamp = self.db.factionrealm.history[self.currentGuild].timestamp}), "WHISPER", sender)
+            self:SendCommMessage(addonName .. "_REQ", self:Serialize({ state = "OFFER", timestamp = self.db.factionrealm.history[self.currentGuild].timestamp }), "WHISPER", sender)
         end
 
         return
@@ -498,7 +498,7 @@ function LA:ProcessSyncDBOffers()
     self.requestSyncTimer = nil
 
     local sender, mostRecentTimestamp = nil, 0
-    for i,v in ipairs(self.requestSyncBucket) do
+    for i, v in ipairs(self.requestSyncBucket) do
         if v["timestamp"] > mostRecentTimestamp then
             sender = v["sender"]
             mostRecentTimestamp = v["timestamp"]
@@ -506,7 +506,7 @@ function LA:ProcessSyncDBOffers()
     end
     self.requestSyncBucket = {}
 
-    -- self:Print("DEBUG:ProcessSyncDBOffers: Best offer by", sender) 
+    -- self:Print("DEBUG:ProcessSyncDBOffers: Best offer by", sender)
     if sender then
         -- Only ask for data if our timestamp is too old
         if self.db.factionrealm.history[self.currentGuild] and self.db.factionrealm.history[self.currentGuild].timestamp then
@@ -518,7 +518,7 @@ function LA:ProcessSyncDBOffers()
         end
 
         -- self:Print("DEBUG:ProcessSyncDBOffers: Accept offer from", sender)
-        self:SendCommMessage(addonName.."_REQ", self:Serialize({state = "ACCEPT"}), "WHISPER", sender)
+        self:SendCommMessage(addonName .. "_REQ", self:Serialize({ state = "ACCEPT" }), "WHISPER", sender)
     end
 end
 
@@ -535,7 +535,7 @@ function LA:SyncDB(playerName)
         })
     end
 
-    self:SendCommMessage(addonName.."_BULK", self:Serialize({
+    self:SendCommMessage(addonName .. "_BULK", self:Serialize({
         timestamp = self.db.factionrealm.history[self.currentGuild].timestamp,
         loots = tbl
     }), "WHISPER", playerName, "BULK")
@@ -579,7 +579,7 @@ function LA:LiveSync(loot, state)
         date = loot["date"],
         state = state,
     }
-    self:SendCommMessage(addonName.."_LIVE", self:Serialize(row), "GUILD")
+    self:SendCommMessage(addonName .. "_LIVE", self:Serialize(row), "GUILD")
 end
 
 -- Receive live distribution addition / removal
@@ -599,7 +599,7 @@ function LA:ReceiveLiveSync(prefix, msg, channel, sender)
 
     local state = loot["state"]
     loot["state"] = nil
-    
+
     if not self:CreateDatabaseIfNecessary() then
         self:Print(L["Cannot live sync database now, please try a manual sync later"])
         return
@@ -678,26 +678,26 @@ end
 
 -- Draw minimap icons and bind buttons
 function LA:DrawMinimapIcon()
-	libDBIcon:Register(addonName, LibStub("LibDataBroker-1.1"):NewDataObject(addonName,
-	{
-		type = "data source",
-		text = addonName,
-        icon = "interface/icons/inv_misc_ornatebox",
-		OnClick = function(self, button)
-			if (button == "RightButton") then
-                InterfaceOptionsFrame_OpenToCategory(addonName)
-                InterfaceOptionsFrame_OpenToCategory(addonName)
-            else
-                LA:ToggleGUI()
+    libDBIcon:Register(addonName, LibStub("LibDataBroker-1.1"):NewDataObject(addonName,
+        {
+            type = "data source",
+            text = addonName,
+            icon = "interface/icons/inv_misc_ornatebox",
+            OnClick = function(self, button)
+                if (button == "RightButton") then
+                    InterfaceOptionsFrame_OpenToCategory(addonName)
+                    InterfaceOptionsFrame_OpenToCategory(addonName)
+                else
+                    LA:ToggleGUI()
+                end
+            end,
+            OnTooltipShow = function(tooltip)
+                tooltip:AddLine(string.format("%s |cff777777v%s|r", addonTitle, addonVersion))
+                tooltip:AddLine(string.format("|cFFCFCFCF%s|r %s", L["Left Click"], L["to open the main window"]))
+                tooltip:AddLine(string.format("|cFFCFCFCF%s|r %s", L["Right Click"], L["to open options"]))
+                tooltip:AddLine(string.format("|cFFCFCFCF%s|r %s", L["Drag"], L["to move this button"]))
             end
-		end,
-		OnTooltipShow = function(tooltip)
-			tooltip:AddLine(string.format("%s |cff777777v%s|r", addonTitle, addonVersion))
-			tooltip:AddLine(string.format("|cFFCFCFCF%s|r %s", L["Left Click"], L["to open the main window"]))
-			tooltip:AddLine(string.format("|cFFCFCFCF%s|r %s", L["Right Click"], L["to open options"]))
-			tooltip:AddLine(string.format("|cFFCFCFCF%s|r %s", L["Drag"], L["to move this button"]))
-		end
-    }), self.db.profile.minimapButton)
+        }), self.db.profile.minimapButton)
 end
 
 function LA:ToggleMinimapButton()
