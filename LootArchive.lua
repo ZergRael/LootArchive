@@ -774,7 +774,7 @@ function LA:CleanupDatabase()
     local count = #self.db.factionrealm.history[self.currentGuild].loots
     if count > self.db.profile.maxHistory then
         ---@diagnostic disable-next-line: undefined-field
-        table.removemulti(self.db.factionrealm.history[self.currentGuild].loots, 0, count - self.db.profile.maxHistory)
+        table.removemulti(self.db.factionrealm.history[self.currentGuild].loots, 1, count - self.db.profile.maxHistory)
 
         if self:IsGUIVisible() then
             self:UpdateRows()
