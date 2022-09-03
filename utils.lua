@@ -12,7 +12,8 @@ end
 function LA:StripAccents(name)
     local slug = self:ToSlug(name)
 
-    local tbl = {["ß"] = "s",
+    local tbl = {
+        ["ß"] = "s",
         ["à"] = "a",
         ["á"] = "a",
         ["â"] = "a",
@@ -46,7 +47,7 @@ function LA:StripAccents(name)
         ["ÿ"] = "y"
     }
 
-  return gsub(slug, "[%z\1-\127\194-\244][\128-\191]*", tbl)
+    return gsub(slug, "[%z\1-\127\194-\244][\128-\191]*", tbl)
 end
 
 function LA:PrintTable(table)

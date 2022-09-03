@@ -1,7 +1,8 @@
 local addonName = "LootArchive"
 local addonTitle = select(2, GetAddOnInfo(addonName))
 local addonVersion = GetAddOnMetadata(addonName, "Version")
-local LA = LibStub("AceAddon-3.0"):NewAddon(addonName, "AceConsole-3.0", "AceEvent-3.0", "AceHook-3.0", "AceComm-3.0", "AceSerializer-3.0", "AceTimer-3.0")
+local LA = LibStub("AceAddon-3.0"):NewAddon(addonName, "AceConsole-3.0", "AceEvent-3.0", "AceHook-3.0", "AceComm-3.0",
+    "AceSerializer-3.0", "AceTimer-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale(addonName, true)
 local libDBIcon = LibStub("LibDBIcon-1.0")
 
@@ -171,7 +172,8 @@ function LA:GiveFromConsole(itemIdOrLinkOrPlayerName, exact)
     -- if there's no item link, there may be an itemID
     -- but we need to make sure it's a just an integer
     if not itemIdOrLink then
-        local mid = strmatch(itemIdOrLinkOrPlayerName, "^(%d+) ") or strmatch(itemIdOrLinkOrPlayerName, " (%d+)$") or strmatch(itemIdOrLinkOrPlayerName, " (%d+) ")
+        local mid = strmatch(itemIdOrLinkOrPlayerName, "^(%d+) ") or strmatch(itemIdOrLinkOrPlayerName, " (%d+)$") or
+            strmatch(itemIdOrLinkOrPlayerName, " (%d+) ")
         if mid then
             local id = GetItemInfoInstant(mid)
             if id then
@@ -468,7 +470,9 @@ function LA:ReceiveRequestSyncDB(prefix, msg, channel, sender)
     if channel == "GUILD" then
         -- This is a post-login _REQ, just answer with our own timestamp
         if self.db.factionrealm.history[self.currentGuild] and self.db.factionrealm.history[self.currentGuild].timestamp then
-            self:SendCommMessage(addonName .. "_REQ", self:Serialize({ state = "OFFER", timestamp = self.db.factionrealm.history[self.currentGuild].timestamp }), "WHISPER", sender)
+            self:SendCommMessage(addonName .. "_REQ",
+                self:Serialize({ state = "OFFER", timestamp = self.db.factionrealm.history[self.currentGuild].timestamp })
+                , "WHISPER", sender)
         end
 
         return
@@ -743,7 +747,8 @@ function LA:GenerateRows()
     end
 
     for _, row in ipairs(self.db.factionrealm.history[self.currentGuild].loots) do
-        if not filter or strfind(row["item"], filter) or strfind(strlower(row["player"]), filter) or strfind(self:StripAccents(row["player"]), filter) then
+        if not filter or strfind(row["item"], filter) or strfind(strlower(row["player"]), filter) or
+            strfind(self:StripAccents(row["player"]), filter) then
             table.insert(tbl, row)
         end
     end

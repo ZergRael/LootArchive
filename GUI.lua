@@ -18,16 +18,16 @@ function LA:CreateGUI()
         -- TODO: maybe also cancel sort ?
     end)
     mainFrame:SetTitle(addonTitle)
-    local frameName = addonName .."_MainFrame"
-	_G[frameName] = mainFrame
-	table.insert(UISpecialFrames, frameName) -- Allow ESC close
+    local frameName = addonName .. "_MainFrame"
+    _G[frameName] = mainFrame
+    table.insert(UISpecialFrames, frameName) -- Allow ESC close
     -- mainFrame:SetStatusText("Status Bar")
     mainFrame:SetLayout("Flow")
 
     -- SEARCH HEADER
     local searchHeader = AceGUI:Create("SimpleGroup")
-	searchHeader:SetFullWidth(true)
-	searchHeader:SetLayout("Flow")
+    searchHeader:SetFullWidth(true)
+    searchHeader:SetLayout("Flow")
     mainFrame:AddChild(searchHeader)
 
     -- Search box
@@ -41,10 +41,10 @@ function LA:CreateGUI()
 
     -- BUTTONS
     local addButton = AceGUI:Create("Button")
-	addButton:SetCallback("OnClick", function() LA:ShowCreateRowFrame() end)
-	addButton:SetHeight(20)
-	addButton:SetWidth(100)
-	addButton:SetText(L["Add loot"])
+    addButton:SetCallback("OnClick", function() LA:ShowCreateRowFrame() end)
+    addButton:SetHeight(20)
+    addButton:SetWidth(100)
+    addButton:SetText(L["Add loot"])
     searchHeader:AddChild(addButton)
 
     local margin = AceGUI:Create("Label")
@@ -53,10 +53,10 @@ function LA:CreateGUI()
 
     -- Export button
     local exportButton = AceGUI:Create("Button")
-	exportButton:SetCallback("OnClick", function() LA:ExportDatabase() end)
-	exportButton:SetHeight(20)
-	exportButton:SetWidth(100)
-	exportButton:SetText(L["Export"])
+    exportButton:SetCallback("OnClick", function() LA:ExportDatabase() end)
+    exportButton:SetHeight(20)
+    exportButton:SetWidth(100)
+    exportButton:SetText(L["Export"])
     searchHeader:AddChild(exportButton)
 
     margin = AceGUI:Create("Label")
@@ -134,18 +134,18 @@ function LA:CreateGUI()
     scrollContainer:SetLayout("Fill")
     mainFrame:AddChild(scrollContainer)
 
-	scrollFrame = CreateFrame("ScrollFrame", nil, scrollContainer.frame, "HybridScrollFrame")
-	HybridScrollFrame_CreateButtons(scrollFrame, "HybridScrollListItemTemplate")
-	scrollFrame.update = function() LA:RedrawRows() end
+    scrollFrame = CreateFrame("ScrollFrame", nil, scrollContainer.frame, "HybridScrollFrame")
+    HybridScrollFrame_CreateButtons(scrollFrame, "HybridScrollListItemTemplate")
+    scrollFrame.update = function() LA:RedrawRows() end
 end
 
 -- Update GUI with rows contents
 function LA:RedrawRows()
-	local buttons = HybridScrollFrame_GetButtons(scrollFrame)
+    local buttons = HybridScrollFrame_GetButtons(scrollFrame)
     local offset = HybridScrollFrame_GetOffset(scrollFrame)
 
     for buttonIndex = 1, #buttons do
-		local button = buttons[buttonIndex]
+        local button = buttons[buttonIndex]
         local itemIndex = buttonIndex + offset
         local row = rows[itemIndex]
 
@@ -175,17 +175,17 @@ function LA:RedrawRows()
             button.Date:SetText(date(L["%F %T"], row["date"]))
 
             button:SetWidth(scrollFrame.scrollChild:GetWidth())
-			button:Show()
-		else
-			button:Hide()
-		end
-	end
+            button:Show()
+        else
+            button:Hide()
+        end
+    end
 
-	local buttonHeight = scrollFrame.buttonHeight
-	local totalHeight = #rows * buttonHeight
-	local shownHeight = #buttons * buttonHeight
+    local buttonHeight = scrollFrame.buttonHeight
+    local totalHeight = #rows * buttonHeight
+    local shownHeight = #buttons * buttonHeight
 
-	HybridScrollFrame_Update(scrollFrame, totalHeight, shownHeight)
+    HybridScrollFrame_Update(scrollFrame, totalHeight, shownHeight)
 end
 
 -- Apply row filters and update status text
@@ -259,9 +259,9 @@ function LA:CreateEditRowFrame()
     editFrame:SetHeight(260)
     editFrame:SetWidth(320)
 
-    local frameName = addonName .."_EditFrame"
-	_G[frameName] = editFrame
-	table.insert(UISpecialFrames, frameName) -- Allow ESC close
+    local frameName = addonName .. "_EditFrame"
+    _G[frameName] = editFrame
+    table.insert(UISpecialFrames, frameName) -- Allow ESC close
     editFrame:SetLayout("Flow")
 
     editItem = AceGUI:Create("EditBox")
@@ -360,7 +360,7 @@ end
 
 -- Row delete confirmation popup frame
 function LA:ConfirmDeleteRow(row)
-    StaticPopupDialogs[addonName.."_DeleteConfirm"] = {
+    StaticPopupDialogs[addonName .. "_DeleteConfirm"] = {
         text = L["Are you sure you want to delete this row ?"],
         button1 = YES,
         button2 = NO,
@@ -375,7 +375,7 @@ function LA:ConfirmDeleteRow(row)
         preferredIndex = 3,
     }
 
-    StaticPopup_Show(addonName.."_DeleteConfirm")
+    StaticPopup_Show(addonName .. "_DeleteConfirm")
 end
 
 -- Export database as CSV
@@ -386,8 +386,8 @@ function LA:ExportDatabase()
     end
 
     local str = "ID,Item,Player,Reason,Date\r\n"
-    for _,v in ipairs(self.db.factionrealm.history[self.currentGuild].loots) do
-        str = str..strjoin(",", v["id"], v["item"], v["player"], v["reason"] or "", date("%F %T", v["date"])).."\r\n"
+    for _, v in ipairs(self.db.factionrealm.history[self.currentGuild].loots) do
+        str = str .. strjoin(",", v["id"], v["item"], v["player"], v["reason"] or "", date("%F %T", v["date"])) .. "\r\n"
     end
 
     local exportFrame = AceGUI:Create("Frame")
@@ -397,9 +397,9 @@ function LA:ExportDatabase()
     exportFrame:SetHeight(320)
     exportFrame:SetWidth(540)
 
-    local frameName = addonName .."_ExportFrame"
-	_G[frameName] = exportFrame
-	table.insert(UISpecialFrames, frameName) -- Allow ESC close
+    local frameName = addonName .. "_ExportFrame"
+    _G[frameName] = exportFrame
+    table.insert(UISpecialFrames, frameName) -- Allow ESC close
 
     local editExport = AceGUI:Create("MultiLineEditBox")
     editExport:SetLabel(L["Copy and paste this as a CSV file"])
