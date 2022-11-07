@@ -299,7 +299,7 @@ end
 
 -- Send to raid/group
 function LA:Announce(str)
-    if self.db.profile.announceTo then
+    if self.db.profile.announceTo == "SELF" then
         self:Print(str)
         return
     end
