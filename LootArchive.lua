@@ -7,7 +7,7 @@ local L = LibStub("AceLocale-3.0"):GetLocale(addonName, true)
 local libDBIcon = LibStub("LibDBIcon-1.0")
 
 local syncThresholdSeconds = 100 -- Loot timestamps acceptable difference
-local syncWaitSeconds = 4 -- Wait time before processing database sync offers
+local syncWaitSeconds = 4        -- Wait time before processing database sync offers
 
 -- Addon init
 function LA:OnInitialize()
@@ -158,6 +158,10 @@ end
 -- Award item to player, based on args and self.trackedItem
 function LA:GiveFromConsole(itemIdOrLinkOrPlayerName, exact)
     -- self:Print("GiveFromConsole", itemIdOrLinkOrPlayerName)
+    if itemIdOrLinkOrPlayerName == "" then
+        self:Print(L["Error: missing item ID or player Name"])
+        return
+    end
 
     local itemIdOrLink, playerName, reason
     -- Match first item

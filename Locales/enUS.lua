@@ -39,6 +39,7 @@ L["Cannot live sync database now, please try a manual sync later"] = "Cannot liv
 L["Cannot store award in database right now, please reload and try again"] = "Cannot store award in database right now, please reload and try again"
 L["Failed to match playername : %s"] = "Failed to match playername : %s"
 L["Not in raid/group, cannot announce"] = "Not in raid/group, cannot announce"
+L["Error: missing item ID or player Name"] = "Error: missing item ID or player Name"
 L["Error: missing current guild info, please /reload and try again"] = "Error: missing current guild info, please /reload and try again"
 
 -- Database
