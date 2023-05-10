@@ -49,15 +49,17 @@ function LA:RegisterOptionsTable()
                     self:GiveFromConsole(itemIdOrLinkOrPlayerName, true)
                 end
             },
+            --@debug@
             Guess = {
                 order = 9,
                 type = "execute",
-                name = "DEBUG: Guess name",
+                name = "Guess name",
                 func = function(f)
                     local name = select(2, strsplit(" ", f["input"], 2))
                     self:GuessPlayerName(name)
                 end
             },
+            --@end-debug@
             General = {
                 order = 10,
                 type = "group",
