@@ -25,7 +25,7 @@ function LA:RegisterOptionsTable()
                 name = L["Add item"],
                 desc = L["Add item link or id to distribute"],
                 func = function(f)
-                    local itemIdOrLink = strtrim(select(2, strsplit(" ", f["input"], 2)))
+                    local itemIdOrLink = strtrim(select(2, strsplit(" ", f["input"], 2)) or "")
                     self:AddFromConsole(itemIdOrLink)
                 end
             },
@@ -35,7 +35,7 @@ function LA:RegisterOptionsTable()
                 name = L["Give item"],
                 desc = L["Store item link or id as awarded to a player"],
                 func = function(f)
-                    local itemIdOrLinkOrPlayerName = strtrim(select(2, strsplit(" ", f["input"], 2)))
+                    local itemIdOrLinkOrPlayerName = strtrim(select(2, strsplit(" ", f["input"], 2)) or "")
                     self:GiveFromConsole(itemIdOrLinkOrPlayerName)
                 end
             },
@@ -45,7 +45,7 @@ function LA:RegisterOptionsTable()
                 name = L["Give item"],
                 desc = L["Store item link or id as awarded to a player"],
                 func = function(f)
-                    local itemIdOrLinkOrPlayerName = strtrim(select(2, strsplit(" ", f["input"], 2)))
+                    local itemIdOrLinkOrPlayerName = strtrim(select(2, strsplit(" ", f["input"], 2)) or "")
                     self:GiveFromConsole(itemIdOrLinkOrPlayerName, true)
                 end
             },
