@@ -1,4 +1,4 @@
-## Interface: 30402
+## Interface: 30403
 ## Title: LootArchive
 ## Notes: Raid loot distribution history
 ## Author: zergrael
