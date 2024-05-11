@@ -5,6 +5,8 @@
 ## Version: @project-version@
 ## Revision: @project-abbreviated-hash@
 ## SavedVariables: LootArchive
+## X-Curse-Project-ID: 545767
+## X-Website: https://www.curseforge.com/wow/addons/lootarchive
 
 embeds.xml
 locales.xml
