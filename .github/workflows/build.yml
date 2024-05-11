@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - "*"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # fetch all history for git describe to work
+
+      - name: Create Package
+        uses: BigWigsMods/packager@v2
+        env:
+          GITHUB_OAUTH: ${{ secrets.GITHUB_TOKEN }}
+
+      # - name: Send Status to Discord
+      #   uses: nebularg/actions-discord-webhook@v1
+      #   with:
+      #     webhook_url: ${{ secrets.WEBHOOK_URL }}
+      #     status: ${{ job.status }}
+      #   if: failure()
