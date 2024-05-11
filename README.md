@@ -17,11 +17,11 @@ Responds to console with **/la** and a minimap button.
 - Configurable database size
 - Display loots history in a sortable table
 
-![](https://img.klso.fr/788C8.png)
+![](https://img.klso.fr/image/6950c4e5-b70d-4d32-bb3c-8a8bdc405bf3.png)
 
 - Also filterable by item or player name
 
-![](https://img.klso.fr/mN0yt.png)
+![](https://img.klso.fr/image/77b12be1-0de1-46a4-98e1-64fefbb523c1.png)
 
 - CSV / Excel export
 - Live database synchronization on loot distribution
